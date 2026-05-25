@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#050508" />
+  <meta name="description" content="GameFinder – Suche nach Spieletipps, Cheats, Videos, Walkthroughs & Mods für alle Gaming-Plattformen" />
+  <link rel="manifest" href="manifest.json" />
+  <title>GameFinder – Dein Gaming-Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root {
+  --bg-void:#050508; --bg-deep:#0a0a12; --bg-card:#0f0f1a; --bg-hover:#161625;
+  --border:#1e1e35; --border-lit:#2e2e55;
+  --cyan:#00f5d4; --cyan-dim:#00c4aa;
+  --purple:#7b2fff; --purple-dim:#5a1fcc;
+  --pink:#f72585; --orange:#ff6b35;
+  --text-1:#e8e8ff; --text-2:#9090b0; --text-3:#555575;
+  --glow-cyan:0 0 20px rgba(0,245,212,0.4),0 0 60px rgba(0,245,212,0.1);
+  --glow-purple:0 0 20px rgba(123,47,255,0.4),0 0 60px rgba(123,47,255,0.1);
+  --radius:12px; --radius-lg:20px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg-void);color:var(--text-1);min-height:100vh;overflow-x:hidden;line-height:1.6}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg-deep)}
+::-webkit-scrollbar-thumb{background:var(--purple-dim);border-radius:3px}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,245,212,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,212,0.03) 1px,transparent 1px);
+  background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 20%,black,transparent)}
+.app-wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 20px 80px}
+
+/* Header */
+.site-header{padding:40px 0 0;text-align:center}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:8px}
+.logo-icon{font-size:2.4rem;filter:drop-shadow(0 0 12px var(--cyan));animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.logo-text{font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:900;letter-spacing:.05em;
+  background:linear-gradient(135deg,var(--cyan) 0%,var(--purple) 100%);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,245,212,0.3))}
+.logo-sub{font-size:.95rem;color:var(--text-2);letter-spacing:.2em;text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;margin-bottom:40px}
+
+/* Search Card */
+.search-card{background:linear-gradient(135deg,rgba(15,15,26,.95),rgba(10,10,18,.98));
+  border:1px solid var(--border-lit);border-radius:var(--radius-lg);padding:32px;margin-bottom:40px;
+  position:relative;overflow:hidden}
+.search-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);
+  animation:scanline 4s linear infinite}
+@keyframes scanline{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
+
+/* Platform Row */
+.platform-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:600px){.platform-row{grid-template-columns:1fr}}
+.select-wrap{display:flex;flex-direction:column;gap:6px}
+.select-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+select{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--radius);
+  color:var(--text-1);padding:12px 40px 12px 16px;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;
+  cursor:pointer;transition:border-color .2s,box-shadow .2s;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300f5d4' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center}
+select:focus{outline:none;border-color:var(--cyan);box-shadow:var(--glow-cyan)}
+select:disabled{opacity:.35;cursor:not-allowed}
+select option{background:#12121f;color:var(--text-1)}
+select.pulse{animation:pulse-border .6s ease}
+@keyframes pulse-border{0%{box-shadow:0 0 0 0 rgba(0,245,212,.5)}50%{box-shadow:0 0 0 8px rgba(0,245,212,0)}100%{box-shadow:0 0 0 0 rgba(0,245,212,0)}}
+
+/* Search Input */
+.search-wrapper{position:relative;margin-bottom:20px}
+.search-input-row{display:flex;gap:10px}
+.search-input-wrap{position:relative;flex:1}
+.search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none;opacity:.5}
+#game-input{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--radius);
+  color:var(--text-1);padding:14px 16px 14px 44px;font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:600;
+  transition:border-color .2s,box-shadow .2s}
+#game-input:focus{outline:none;border-color:var(--cyan);box-shadow:var(--glow-cyan)}
+#game-input::placeholder{color:var(--text-3);font-weight:400}
+#game-input.shake{animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+/* Button */
+#search-btn{background:linear-gradient(135deg,var(--cyan),var(--purple));border:none;border-radius:var(--radius);
+  color:#fff;font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  padding:14px 24px;cursor:pointer;transition:transform .15s,box-shadow .2s;white-space:nowrap}
+#search-btn:hover{transform:translateY(-2px);box-shadow:var(--glow-cyan)}
+#search-btn:active{transform:translateY(0)}
+
+/* Suggestions */
+#suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:100;
+  background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--radius);
+  overflow:hidden;max-height:0;opacity:0;transition:max-height .3s ease,opacity .2s ease;
+  box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#suggestions.visible{max-height:480px;opacity:1;overflow-y:auto}
+.suggestion-item{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;
+  border-bottom:1px solid var(--border);transition:background .15s}
+.suggestion-item:last-child{border-bottom:none}
+.suggestion-item:hover,.suggestion-item.active{background:var(--bg-hover)}
+.sug-img{width:48px;height:36px;border-radius:6px;background-size:cover;background-position:center;
+  background-color:var(--bg-deep);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.sug-info{flex:1;min-width:0}
+.sug-name{display:block;font-weight:600;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sug-meta{font-size:.75rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.sug-badge{font-size:.8rem;opacity:.6}
+
+/* Game Info */
+#game-info{display:none;margin-bottom:28px;border-radius:var(--radius-lg);overflow:hidden;
+  border:1px solid var(--border-lit);animation:fadeSlideIn .4s ease}
+#game-info.visible{display:block}
+.game-banner{background-size:cover;background-position:center;background-color:var(--bg-card);min-height:160px;position:relative}
+.game-banner-overlay{background:linear-gradient(to right,rgba(5,5,8,.97) 40%,rgba(5,5,8,.5));
+  padding:28px 32px;min-height:160px;display:flex;align-items:center}
+.game-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.2rem,3vw,2rem);font-weight:900;
+  color:var(--cyan);text-shadow:0 0 20px rgba(0,245,212,.4);margin-bottom:10px}
+.game-meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.meta-chip{background:rgba(255,255,255,.06);border:1px solid var(--border-lit);border-radius:20px;
+  padding:3px 12px;font-size:.8rem;font-family:'JetBrains Mono',monospace;color:var(--text-2)}
+.meta-score{border-color:var(--orange);color:var(--orange)}
+.game-platforms{font-size:.8rem;color:var(--text-3);margin-top:4px}
+
+/* Results */
+#results-panel{display:none;animation:fadeSlideIn .4s ease}
+#results-panel.visible{display:block}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* Category Tabs */
+#category-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.cat-tab{display:flex;align-items:center;gap:7px;padding:10px 18px;background:var(--bg-card);
+  border:1px solid var(--border-lit);border-radius:var(--radius);color:var(--text-2);
+  font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s}
+.cat-tab:hover{border-color:var(--cat-color);color:var(--cat-color)}
+.cat-tab.active{background:rgba(255,255,255,.05);border-color:var(--cat-color);color:var(--cat-color);
+  box-shadow:0 0 20px rgba(0,245,212,.15)}
+.cat-icon{font-size:1rem}
+
+/* Results Content */
+#results-content{background:var(--bg-card);border:1px solid var(--border-lit);
+  border-radius:var(--radius-lg);overflow:hidden;padding:24px}
+.results-header{display:flex;align-items:center;gap:10px;font-family:'Orbitron',sans-serif;
+  font-size:.9rem;color:var(--cat-color);text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.results-header em{font-style:normal;color:var(--text-1)}
+
+/* Result Cards */
+.result-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:20px}
+.result-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--bg-deep);
+  border:1px solid var(--border-lit);border-radius:var(--radius);text-decoration:none;color:var(--text-1);
+  position:relative;overflow:hidden;transition:border-color .2s,transform .2s;opacity:0;transform:translateY(10px)}
+.result-card.card-enter{animation:cardEnter .35s ease forwards}
+@keyframes cardEnter{to{opacity:1;transform:translateY(0)}}
+.result-card:hover{border-color:var(--cat-color);transform:translateY(-2px)}
+.result-card:hover .rc-glow{opacity:1}
+.rc-glow{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,212,.04),transparent);
+  opacity:0;transition:opacity .2s;pointer-events:none}
+.rc-icon{font-size:1.8rem;flex-shrink:0}
+.rc-info{flex:1}
+.rc-site{font-weight:700;font-size:1rem;color:var(--text-1);margin-bottom:2px}
+.rc-action{font-size:.78rem;color:var(--cat-color,var(--cyan));font-family:'JetBrains Mono',monospace;opacity:.8}
+
+/* Quick Search */
+.quick-search-bar{display:flex;align-items:center;gap:10px;padding-top:16px;
+  border-top:1px solid var(--border);font-size:.85rem;color:var(--text-3);flex-wrap:wrap}
+.quick-link{padding:4px 14px;background:var(--bg-hover);border:1px solid var(--border-lit);
+  border-radius:20px;color:var(--text-2);text-decoration:none;font-size:.82rem;
+  font-family:'JetBrains Mono',monospace;transition:all .15s}
+.quick-link:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* DB Section */
+.db-section{margin-top:48px;padding:24px;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:space-between;
+  gap:20px;flex-wrap:wrap}
+.db-info{flex:1}
+.db-title{font-family:'Orbitron',sans-serif;font-size:.8rem;text-transform:uppercase;
+  letter-spacing:.15em;color:var(--text-3);margin-bottom:4px}
+#db-status{font-size:.95rem;color:var(--text-2);font-weight:600}
+#last-updated{font-size:.78rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;margin-top:2px}
+#update-db-btn{background:transparent;border:1px solid var(--purple-dim);border-radius:var(--radius);
+  color:var(--purple);font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:700;
+  padding:10px 20px;cursor:pointer;transition:all .2s;white-space:nowrap}
+#update-db-btn:hover{background:rgba(123,47,255,.1);border-color:var(--purple);box-shadow:var(--glow-purple)}
+#update-db-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Footer */
+.site-footer{text-align:center;margin-top:60px;padding:24px 0;border-top:1px solid var(--border);
+  color:var(--text-3);font-size:.8rem;font-family:'JetBrains Mono',monospace}
+.site-footer a{color:var(--cyan);text-decoration:none}
+
+/* Spinner */
+.loading-spinner{width:32px;height:32px;border:3px solid var(--border-lit);border-top-color:var(--cyan);
+  border-radius:50%;animation:spin .8s linear infinite;margin:24px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.info-fallback{padding:20px;font-size:1.1rem;color:var(--text-2);text-align:center}
+
+/* Responsive */
+@media(max-width:768px){
+  .search-card{padding:20px}
+  .search-input-row{flex-direction:column}
+  #search-btn{width:100%}
+  .result-cards{grid-template-columns:1fr}
+  .cat-tab .cat-label{display:none}
+  .cat-tab{padding:10px 14px}
+  .game-banner-overlay{padding:20px}
+  .db-section{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:400px){
+  .logo-text{font-size:1.6rem}
+  .app-wrap{padding:0 12px 60px}
+}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+
+  <header class="site-header">
+    <div class="logo-row">
+      <span class="logo-icon">🎮</span>
+      <h1 class="logo-text">GAMEFINDER</h1>
+    </div>
+    <p class="logo-sub">Tipps · Cheats · Videos · Walkthroughs · Downloads</p>
+  </header>
+
+  <section class="search-card">
+    <div class="platform-row">
+      <div class="select-wrap">
+        <label class="select-label" for="manufacturer-select">Hersteller</label>
+        <select id="manufacturer-select">
+          <option value="">— Hersteller wählen —</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <label class="select-label" for="platform-select">Plattform</label>
+        <select id="platform-select" disabled>
+          <option value="">— erst Hersteller wählen —</option>
+        </select>
+      </div>
+    </div>
+    <div class="search-wrapper">
+      <div class="search-input-row">
+        <div class="search-input-wrap">
+          <span class="search-icon">🕹️</span>
+          <input id="game-input" type="text" placeholder="Spieltitel eingeben…"
+            autocomplete="off" autocorrect="off" spellcheck="false" />
+        </div>
+        <button id="search-btn">SUCHEN</button>
+      </div>
+      <div id="suggestions"></div>
+    </div>
+  </section>
+
+  <div id="game-info"></div>
+
+  <section id="results-panel">
+    <div id="category-tabs"></div>
+    <div id="results-content"></div>
+  </section>
+
+  <section class="db-section">
+    <div class="db-info">
+      <div class="db-title">💾 Lokale Spieldatenbank</div>
+      <div id="db-status">Prüfe Datenbank…</div>
+      <div id="last-updated"></div>
+    </div>
+    <button id="update-db-btn">🔄 Datenbank aktualisieren</button>
+  </section>
+
+  <footer class="site-footer">
+    <p>GameFinder &copy; 2025 · Powered by <a href="https://rawg.io" target="_blank">RAWG.io API</a></p>
+  </footer>
+
+</div>
+
+<script>
+// ── Platform Data ──────────────────────────────────────────────────────────
+const PLATFORMS = {
+  PC:{label:"PC",icon:"🖥️",platforms:[
+    {id:4,name:"PC (Windows)",slug:"pc"},
+    {id:5,name:"macOS",slug:"mac"},
+    {id:6,name:"Linux",slug:"linux"}
+  ]},
+  Sony:{label:"Sony",icon:"🎮",platforms:[
+    {id:27,name:"PlayStation 1",slug:"playstation"},
+    {id:15,name:"PlayStation 2",slug:"playstation2"},
+    {id:16,name:"PlayStation 3",slug:"playstation3"},
+    {id:18,name:"PlayStation 4",slug:"playstation4"},
+    {id:187,name:"PlayStation 5",slug:"playstation5"},
+    {id:17,name:"PSP",slug:"psp"},
+    {id:19,name:"PS Vita",slug:"ps-vita"}
+  ]},
+  Nintendo:{label:"Nintendo",icon:"🕹️",platforms:[
+    {id:49,name:"NES",slug:"nes"},
+    {id:79,name:"SNES",slug:"snes"},
+    {id:83,name:"Nintendo 64",slug:"nintendo64"},
+    {id:105,name:"GameCube",slug:"gamecube"},
+    {id:10,name:"Wii",slug:"wii"},
+    {id:11,name:"Wii U",slug:"wiiu"},
+    {id:7,name:"Nintendo Switch",slug:"nintendo-switch"},
+    {id:24,name:"Game Boy",slug:"gameboy"},
+    {id:43,name:"Game Boy Advance",slug:"gba"},
+    {id:77,name:"Nintendo DS",slug:"nds"},
+    {id:137,name:"Nintendo 3DS",slug:"3ds"}
+  ]},
+  Microsoft:{label:"Microsoft",icon:"🎯",platforms:[
+    {id:80,name:"Xbox (Original)",slug:"xbox"},
+    {id:14,name:"Xbox 360",slug:"xbox360"},
+    {id:1,name:"Xbox One",slug:"xbox-one"},
+    {id:186,name:"Xbox Series X/S",slug:"xbox-series-x"}
+  ]},
+  Sega:{label:"Sega",icon:"⚡",platforms:[
+    {id:167,name:"Sega Master System",slug:"sega-master-system"},
+    {id:107,name:"Mega Drive / Genesis",slug:"sega-genesis"},
+    {id:119,name:"Sega 32X",slug:"sega-32x"},
+    {id:117,name:"Sega CD",slug:"sega-cd"},
+    {id:74,name:"Sega Saturn",slug:"sega-saturn"},
+    {id:106,name:"Dreamcast",slug:"dreamcast"},
+    {id:111,name:"Game Gear",slug:"game-gear"}
+  ]},
+  Atari:{label:"Atari",icon:"👾",platforms:[
+    {id:28,name:"Atari 2600",slug:"atari-2600"},
+    {id:31,name:"Atari 5200",slug:"atari-5200"},
+    {id:23,name:"Atari 7800",slug:"atari-7800"},
+    {id:25,name:"Atari Lynx",slug:"atari-lynx"},
+    {id:22,name:"Atari Jaguar",slug:"atari-jaguar"}
+  ]},
+  Mobile:{label:"Mobile",icon:"📱",platforms:[
+    {id:21,name:"Android",slug:"android"},
+    {id:3,name:"iOS",slug:"ios"}
+  ]}
+};
+
+const CATEGORIES = [
+  {id:"tips",      label:"Tipps & Tricks",  icon:"💡",color:"#00f5d4"},
+  {id:"cheats",    label:"Cheats & Codes",  icon:"🔓",color:"#f72585"},
+  {id:"videos",    label:"Videos",          icon:"📹",color:"#ff6b35"},
+  {id:"blogs",     label:"Blogs & Reviews", icon:"📝",color:"#7209b7"},
+  {id:"downloads", label:"Downloads & Mods",icon:"📥",color:"#4cc9f0"},
+  {id:"walkthroughs",label:"Walkthroughs",  icon:"🗺️",color:"#06ffa5"}
+];
+
+const RAWG_KEY = "d3f21eea74f841e287ec5890b83da8d5";
+const RAWG = "https://api.rawg.io/api";
+
+const SITE_ICONS = {
+  "GameFAQs":"📚","IGN":"🎮","IGN Guides":"📖","YouTube":"▶️",
+  "YouTube Tipps":"💡","YouTube Walkthrough":"🗺️","Twitch":"📡",
+  "Gamestar":"⭐","GamePro":"🕹️","Nexus Mods":"🔧","ModDB":"💾",
+  "Cheatcc":"🔓","Google":"🔍","GameFAQs Cheats":"💎","GameFAQs Walkthrough":"🗺️"
+};
+
+function buildLinks(game, platform, catId) {
+  const q = encodeURIComponent(game + (platform?" "+platform:""));
+  const g = encodeURIComponent(game);
+  const map = {
+    tips:[
+      {site:"GameFAQs",url:`https://gamefaqs.gamespot.com/search?game=${g}`},
+      {site:"IGN Guides",url:`https://www.ign.com/search?q=${q}+tips`},
+      {site:"Gamestar",url:`https://www.gamestar.de/suche/?keywords=${q}`},
+      {site:"Google",url:`https://www.google.com/search?q=${q}+tipps+tricks`}
+    ],
+    cheats:[
+      {site:"GameFAQs Cheats",url:`https://gamefaqs.gamespot.com/search?game=${g}&category=cheats`},
+      {site:"Cheatcc",url:`https://www.cheatcc.com/search/?q=${q}`},
+      {site:"IGN",url:`https://www.ign.com/search?q=${q}+cheats`},
+      {site:"Google",url:`https://www.google.com/search?q=${q}+cheats+codes`}
+    ],
+    videos:[
+      {site:"YouTube",url:`https://www.youtube.com/results?search_query=${q}+gameplay`},
+      {site:"YouTube Tipps",url:`https://www.youtube.com/results?search_query=${q}+tipps+deutsch`},
+      {site:"Twitch",url:`https://www.twitch.tv/search?term=${q}`},
+      {site:"Google",url:`https://www.google.com/search?q=${q}+video`}
+    ],
+    blogs:[
+      {site:"IGN",url:`https://www.ign.com/search?q=${q}`},
+      {site:"Gamestar",url:`https://www.gamestar.de/suche/?keywords=${q}`},
+      {site:"GamePro",url:`https://www.gamepro.de/suche/?keywords=${q}`},
+      {site:"Google",url:`https://www.google.com/search?q=${q}+blog+review`}
+    ],
+    downloads:[
+      {site:"Nexus Mods",url:`https://www.nexusmods.com/search/?gsearch=${g}`},
+      {site:"ModDB",url:`https://www.moddb.com/search?q=${q}`},
+      {site:"Google",url:`https://www.google.com/search?q=${q}+download+mod`}
+    ],
+    walkthroughs:[
+      {site:"GameFAQs Walkthrough",url:`https://gamefaqs.gamespot.com/search?game=${g}&category=walkthrough`},
+      {site:"YouTube Walkthrough",url:`https://www.youtube.com/results?search_query=${q}+walkthrough`},
+      {site:"IGN Guides",url:`https://www.ign.com/search?q=${q}+walkthrough`},
+      {site:"Google",url:`https://www.google.com/search?q=${q}+walkthrough+komplettl%C3%B6sung`}
+    ]
+  };
+  return map[catId]||[];
+}
+
+// ── State ──────────────────────────────────────────────────────────────────
+let ST = { manufacturer:null, platform:null, game:null, gameSlug:null,
+           suggestions:[], activeCategory:null, dbGames:[], dbUpdated:null };
+
+// ── Refs ───────────────────────────────────────────────────────────────────
+const mfgSel   = document.getElementById("manufacturer-select");
+const platSel  = document.getElementById("platform-select");
+const gameInp  = document.getElementById("game-input");
+const sugBox   = document.getElementById("suggestions");
+const searchBt = document.getElementById("search-btn");
+const catTabs  = document.getElementById("category-tabs");
+const resPan   = document.getElementById("results-panel");
+const resCtnt  = document.getElementById("results-content");
+const gameInfo = document.getElementById("game-info");
+const dbStat   = document.getElementById("db-status");
+const updBtn   = document.getElementById("update-db-btn");
+const lastUpd  = document.getElementById("last-updated");
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function init() {
+  // Populate manufacturers
+  mfgSel.innerHTML = '<option value="">— Hersteller wählen —</option>';
+  Object.entries(PLATFORMS).forEach(([k,v]) => {
+    const o = document.createElement("option");
+    o.value = k; o.textContent = `${v.icon} ${v.label}`;
+    mfgSel.appendChild(o);
+  });
+
+  mfgSel.addEventListener("change", () => {
+    ST.manufacturer = mfgSel.value; ST.platform = null;
+    platSel.innerHTML = '<option value="">— Plattform wählen —</option>';
+    platSel.disabled = !ST.manufacturer;
+    if (ST.manufacturer) {
+      PLATFORMS[ST.manufacturer].platforms.forEach(p => {
+        const o = document.createElement("option");
+        o.value = p.id; o.dataset.name = p.name; o.dataset.slug = p.slug;
+        o.textContent = p.name; platSel.appendChild(o);
+      });
+      platSel.classList.add("pulse");
+      setTimeout(()=>platSel.classList.remove("pulse"),600);
+    }
+  });
+
+  platSel.addEventListener("change", () => {
+    const o = platSel.selectedOptions[0];
+    ST.platform = o && o.value ? {id:o.value,name:o.dataset.name,slug:o.dataset.slug} : null;
+  });
+
+  gameInp.addEventListener("input", debounce(onGameInput, 300));
+  gameInp.addEventListener("keydown", e => {
+    if (e.key==="Enter") { hideSug(); doSearch(); }
+    if (e.key==="Escape") hideSug();
+    if (e.key==="ArrowDown") navSug(1);
+    if (e.key==="ArrowUp")   navSug(-1);
+  });
+  document.addEventListener("click", e => { if (!e.target.closest(".search-wrapper")) hideSug(); });
+  searchBt.addEventListener("click", doSearch);
+  updBtn.addEventListener("click", updateDB);
+  loadDB();
+}
+
+// ── Autocomplete ───────────────────────────────────────────────────────────
+async function onGameInput() {
+  const q = gameInp.value.trim();
+  if (q.length < 2) { hideSug(); return; }
+  const local = ST.dbGames.filter(g => g.name.toLowerCase().includes(q.toLowerCase())).slice(0,4);
+  try {
+    const pParam = ST.platform ? `&platforms=${ST.platform.id}` : "";
+    const r = await fetch(`${RAWG}/games?search=${encodeURIComponent(q)}${pParam}&page_size=8&key=${RAWG_KEY}`);
+    const d = await r.json();
+    const rawg = (d.results||[]).map(g=>({name:g.name,slug:g.slug,released:g.released,bg:g.background_image,rating:g.rating}));
+    const seen = new Set();
+    const merged = [...local.map(g=>({...g,src:"local"})), ...rawg]
+      .filter(g=>{ if(seen.has(g.name)) return false; seen.add(g.name); return true; }).slice(0,8);
+    ST.suggestions = merged;
+    renderSug(merged);
+  } catch { if(local.length) renderSug(local); }
+}
+
+function renderSug(games) {
+  if (!games.length) { hideSug(); return; }
+  sugBox.innerHTML = games.map((g,i) => `
+    <div class="suggestion-item" data-i="${i}">
+      <div class="sug-img" style="background-image:url('${g.bg||""}')">
+        ${!g.bg?"🎮":""}
+      </div>
+      <div class="sug-info">
+        <span class="sug-name">${g.name}</span>
+        <span class="sug-meta">${g.released?g.released.slice(0,4):""}${g.rating?` · ⭐${g.rating.toFixed(1)}`:""}</span>
+      </div>
+      ${g.src==="local"?'<span class="sug-badge">💾</span>':""}
+    </div>`).join("");
+  sugBox.querySelectorAll(".suggestion-item").forEach((el,i) => {
+    el.addEventListener("click",()=>selectGame(games[i]));
+    el.addEventListener("mouseenter",()=>{
+      sugBox.querySelectorAll(".suggestion-item").forEach(s=>s.classList.remove("active"));
+      el.classList.add("active");
+    });
+  });
+  sugBox.classList.add("visible");
+}
+
+function hideSug() { sugBox.classList.remove("visible"); }
+
+function selectGame(g) {
+  ST.game = g.name; ST.gameSlug = g.slug;
+  gameInp.value = g.name; hideSug();
+  fetchGameInfo(g.slug||g.name);
+}
+
+function navSug(d) {
+  const items = [...sugBox.querySelectorAll(".suggestion-item")];
+  if (!items.length) return;
+  const cur = sugBox.querySelector(".suggestion-item.active");
+  let idx = cur ? items.indexOf(cur)+d : (d===1?0:items.length-1);
+  idx = (idx+items.length)%items.length;
+  items.forEach(i=>i.classList.remove("active"));
+  items[idx].classList.add("active"); items[idx].scrollIntoView({block:"nearest"});
+}
+
+// ── Game Info ──────────────────────────────────────────────────────────────
+async function fetchGameInfo(slugOrName) {
+  gameInfo.innerHTML = '<div class="loading-spinner"></div>';
+  gameInfo.classList.add("visible");
+  try {
+    const r = await fetch(`${RAWG}/games/${slugOrName}?key=${RAWG_KEY}`);
+    if (!r.ok) throw new Error();
+    const g = await r.json();
+    const plats = (g.platforms||[]).map(p=>p.platform.name).join(", ");
+    const genres = (g.genres||[]).map(x=>x.name).join(", ");
+    gameInfo.innerHTML = `
+      <div class="game-banner" style="background-image:url('${g.background_image||""}')">
+        <div class="game-banner-overlay">
+          <div>
+            <h2 class="game-title">${g.name}</h2>
+            <div class="game-meta-row">
+              ${g.released?`<span class="meta-chip">📅 ${g.released}</span>`:""}
+              ${g.rating?`<span class="meta-chip">⭐ ${g.rating}/5</span>`:""}
+              ${genres?`<span class="meta-chip">🎭 ${genres}</span>`:""}
+              ${g.metacritic?`<span class="meta-chip meta-score">Metacritic: ${g.metacritic}</span>`:""}
+            </div>
+            ${plats?`<div class="game-platforms">🖥️ ${plats}</div>`:""}
+          </div>
+        </div>
+      </div>`;
+  } catch {
+    gameInfo.innerHTML = `<p class="info-fallback">🎮 ${slugOrName}</p>`;
+  }
+}
+
+// ── Search ─────────────────────────────────────────────────────────────────
+function doSearch() {
+  const name = gameInp.value.trim();
+  if (!name) { gameInp.classList.add("shake"); setTimeout(()=>gameInp.classList.remove("shake"),500); return; }
+  ST.game = name;
+  if (!ST.gameSlug) fetchGameInfo(name);
+  catTabs.innerHTML = CATEGORIES.map(c=>`
+    <button class="cat-tab" data-cat="${c.id}" style="--cat-color:${c.color}">
+      <span class="cat-icon">${c.icon}</span>
+      <span class="cat-label">${c.label}</span>
+    </button>`).join("");
+  catTabs.querySelectorAll(".cat-tab").forEach(b=>b.addEventListener("click",()=>openCat(b.dataset.cat)));
+  resPan.classList.add("visible");
+  resPan.scrollIntoView({behavior:"smooth",block:"start"});
+  openCat(CATEGORIES[0].id);
+}
+
+function openCat(catId) {
+  ST.activeCategory = catId;
+  catTabs.querySelectorAll(".cat-tab").forEach(b=>b.classList.toggle("active",b.dataset.cat===catId));
+  const cat = CATEGORIES.find(c=>c.id===catId);
+  const pName = ST.platform?.name || ST.manufacturer || "";
+  const links = buildLinks(ST.game, pName, catId);
+  resCtnt.innerHTML = `
+    <div class="results-header" style="--cat-color:${cat.color}">
+      <span>${cat.icon}</span>
+      <span>${cat.label} für <em>${ST.game}</em>${pName?` auf <em>${pName}</em>`:""}</span>
+    </div>
+    <div class="result-cards">
+      ${links.map(l=>`
+        <a class="result-card" href="${l.url}" target="_blank" rel="noopener" style="--cat-color:${cat.color}">
+          <div class="rc-icon">${SITE_ICONS[l.site]||"🌐"}</div>
+          <div class="rc-info">
+            <div class="rc-site">${l.site}</div>
+            <div class="rc-action">Jetzt suchen →</div>
+          </div>
+          <div class="rc-glow"></div>
+        </a>`).join("")}
+    </div>
+    <div class="quick-search-bar">
+      <span>Eigene Suche:</span>
+      <a class="quick-link" href="https://www.google.com/search?q=${encodeURIComponent(ST.game+" "+pName+" "+cat.label)}" target="_blank">Google</a>
+      <a class="quick-link" href="https://duckduckgo.com/?q=${encodeURIComponent(ST.game+" "+pName+" "+cat.label)}" target="_blank">DuckDuckGo</a>
+    </div>`;
+  document.querySelectorAll(".result-card").forEach((c,i)=>{
+    c.style.animationDelay=`${i*80}ms`; c.classList.add("card-enter");
+  });
+}
+
+// ── Database ───────────────────────────────────────────────────────────────
+function loadDB() {
+  try {
+    const raw = localStorage.getItem("gf_games");
+    const ts  = localStorage.getItem("gf_updated");
+    if (raw) {
+      ST.dbGames = JSON.parse(raw); ST.dbUpdated = ts;
+      dbStat.textContent = `${ST.dbGames.length.toLocaleString()} Spiele in der Datenbank`;
+      lastUpd.textContent = ts ? `Zuletzt aktualisiert: ${new Date(ts).toLocaleDateString("de-DE")}` : "";
+    } else { dbStat.textContent = "Datenbank leer – bitte aktualisieren"; }
+  } catch { dbStat.textContent = "Fehler beim Laden"; }
+}
+
+async function updateDB() {
+  updBtn.disabled = true; updBtn.textContent = "⏳ Lade...";
+  const all = []; let page = 1; const max = 20;
+  try {
+    while (page <= max) {
+      const r = await fetch(`${RAWG}/games?page=${page}&page_size=40&ordering=-rating&key=${RAWG_KEY}`);
+      const d = await r.json();
+      if (!d.results?.length) break;
+      all.push(...d.results.map(g=>({name:g.name,slug:g.slug,released:g.released,
+        bg:g.background_image,rating:g.rating,
+        platforms:(g.platforms||[]).map(p=>p.platform.id)})));
+      dbStat.textContent = `Geladen: ${all.length} Spiele (Seite ${page}/${max})...`;
+      page++; await new Promise(r=>setTimeout(r,120));
+    }
+    ST.dbGames = all; ST.dbUpdated = new Date().toISOString();
+    localStorage.setItem("gf_games", JSON.stringify(all));
+    localStorage.setItem("gf_updated", ST.dbUpdated);
+    dbStat.textContent = `✅ ${all.length.toLocaleString()} Spiele gespeichert`;
+    lastUpd.textContent = `Zuletzt aktualisiert: ${new Date().toLocaleDateString("de-DE")}`;
+  } catch(e) {
+    dbStat.textContent = "❌ Fehler: " + e.message;
+  } finally {
+    updBtn.disabled = false; updBtn.textContent = "🔄 Datenbank aktualisieren";
+  }
+}
+
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
+
+init();
+</script>
+</body>
+</html>
