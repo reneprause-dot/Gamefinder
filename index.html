@@ -1,627 +1,816 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#050508" />
-  <meta name="description" content="GameFinder – Suche nach Spieletipps, Cheats, Videos, Walkthroughs & Mods für alle Gaming-Plattformen" />
-  <link rel="manifest" href="manifest.json" />
-  <title>GameFinder – Dein Gaming-Portal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#050508"/>
+<meta name="description" content="GameFinder – Spieletipps, Cheats, Videos & mehr"/>
+<title>GameFinder – Dein Gaming-Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-:root {
-  --bg-void:#050508; --bg-deep:#0a0a12; --bg-card:#0f0f1a; --bg-hover:#161625;
-  --border:#1e1e35; --border-lit:#2e2e55;
-  --cyan:#00f5d4; --cyan-dim:#00c4aa;
-  --purple:#7b2fff; --purple-dim:#5a1fcc;
-  --pink:#f72585; --orange:#ff6b35;
-  --text-1:#e8e8ff; --text-2:#9090b0; --text-3:#555575;
-  --glow-cyan:0 0 20px rgba(0,245,212,0.4),0 0 60px rgba(0,245,212,0.1);
-  --glow-purple:0 0 20px rgba(123,47,255,0.4),0 0 60px rgba(123,47,255,0.1);
-  --radius:12px; --radius-lg:20px;
+:root{
+  --bg-void:#050508;--bg-deep:#0a0a12;--bg-card:#0f0f1a;--bg-hover:#161625;
+  --border:#1e1e35;--border-lit:#2e2e55;
+  --cyan:#00f5d4;--purple:#7b2fff;--purple-dim:#5a1fcc;
+  --pink:#f72585;--orange:#ff6b35;--yellow:#ffd60a;
+  --text-1:#e8e8ff;--text-2:#9090b0;--text-3:#555575;
+  --glow-cyan:0 0 20px rgba(0,245,212,.4),0 0 60px rgba(0,245,212,.1);
+  --glow-purple:0 0 20px rgba(123,47,255,.4),0 0 60px rgba(123,47,255,.1);
+  --r:12px;--rl:20px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'Rajdhani',sans-serif;background:var(--bg-void);color:var(--text-1);min-height:100vh;overflow-x:hidden;line-height:1.6}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--bg-deep)}
-::-webkit-scrollbar-thumb{background:var(--purple-dim);border-radius:3px}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg-deep)}::-webkit-scrollbar-thumb{background:var(--purple-dim);border-radius:3px}
 body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:linear-gradient(rgba(0,245,212,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,212,0.03) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(0,245,212,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,212,.03) 1px,transparent 1px);
   background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 20%,black,transparent)}
-.app-wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 20px 80px}
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 20px 80px}
 
-/* Header */
-.site-header{padding:40px 0 0;text-align:center}
+/* HEADER */
+header{padding:40px 0 0;text-align:center}
 .logo-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:8px}
 .logo-icon{font-size:2.4rem;filter:drop-shadow(0 0 12px var(--cyan));animation:float 3s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.logo-text{font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:900;letter-spacing:.05em;
-  background:linear-gradient(135deg,var(--cyan) 0%,var(--purple) 100%);-webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,245,212,0.3))}
-.logo-sub{font-size:.95rem;color:var(--text-2);letter-spacing:.2em;text-transform:uppercase;
-  font-family:'JetBrains Mono',monospace;margin-bottom:40px}
+.logo-text{font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:900;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,245,212,.3))}
+.logo-sub{font-size:.9rem;color:var(--text-2);letter-spacing:.2em;text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;margin-bottom:36px}
 
-/* Search Card */
+/* SEARCH CARD */
 .search-card{background:linear-gradient(135deg,rgba(15,15,26,.95),rgba(10,10,18,.98));
-  border:1px solid var(--border-lit);border-radius:var(--radius-lg);padding:32px;margin-bottom:40px;
+  border:1px solid var(--border-lit);border-radius:var(--rl);padding:28px 32px;margin-bottom:32px;
   position:relative;overflow:hidden}
 .search-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);
-  animation:scanline 4s linear infinite}
-@keyframes scanline{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
+  animation:scan 4s linear infinite}
+@keyframes scan{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
 
-/* Platform Row */
-.platform-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
-@media(max-width:600px){.platform-row{grid-template-columns:1fr}}
-.select-wrap{display:flex;flex-direction:column;gap:6px}
-.select-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-3);font-family:'JetBrains Mono',monospace}
-select{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--radius);
-  color:var(--text-1);padding:12px 40px 12px 16px;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;
+/* PLATFORM ROW */
+.plat-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+@media(max-width:580px){.plat-row{grid-template-columns:1fr}}
+.sel-wrap{display:flex;flex-direction:column;gap:5px}
+.sel-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+select{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
+  color:var(--text-1);padding:11px 40px 11px 14px;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;
   cursor:pointer;transition:border-color .2s,box-shadow .2s;appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300f5d4' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300f5d4' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 14px center}
 select:focus{outline:none;border-color:var(--cyan);box-shadow:var(--glow-cyan)}
 select:disabled{opacity:.35;cursor:not-allowed}
-select option{background:#12121f;color:var(--text-1)}
-select.pulse{animation:pulse-border .6s ease}
-@keyframes pulse-border{0%{box-shadow:0 0 0 0 rgba(0,245,212,.5)}50%{box-shadow:0 0 0 8px rgba(0,245,212,0)}100%{box-shadow:0 0 0 0 rgba(0,245,212,0)}}
+select option{background:#12121f}
+select.pulse{animation:pulseB .6s ease}
+@keyframes pulseB{0%{box-shadow:0 0 0 0 rgba(0,245,212,.5)}50%{box-shadow:0 0 0 8px rgba(0,245,212,0)}100%{box-shadow:0 0 0 0 rgba(0,245,212,0)}}
 
-/* Search Input */
-.search-wrapper{position:relative;margin-bottom:20px}
-.search-input-row{display:flex;gap:10px}
-.search-input-wrap{position:relative;flex:1}
-.search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none;opacity:.5}
-#game-input{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--radius);
-  color:var(--text-1);padding:14px 16px 14px 44px;font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:600;
+/* SEARCH INPUT */
+.inp-row{display:flex;gap:10px;position:relative}
+.inp-wrap{position:relative;flex:1}
+.inp-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.45;pointer-events:none}
+#game-input{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
+  color:var(--text-1);padding:13px 14px 13px 42px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;
   transition:border-color .2s,box-shadow .2s}
 #game-input:focus{outline:none;border-color:var(--cyan);box-shadow:var(--glow-cyan)}
 #game-input::placeholder{color:var(--text-3);font-weight:400}
 #game-input.shake{animation:shake .4s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-
-/* Button */
-#search-btn{background:linear-gradient(135deg,var(--cyan),var(--purple));border:none;border-radius:var(--radius);
-  color:#fff;font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.08em;
-  padding:14px 24px;cursor:pointer;transition:transform .15s,box-shadow .2s;white-space:nowrap}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+#search-btn{background:linear-gradient(135deg,var(--cyan),var(--purple));border:none;border-radius:var(--r);
+  color:#fff;font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.08em;
+  padding:13px 22px;cursor:pointer;transition:transform .15s,box-shadow .2s;white-space:nowrap}
 #search-btn:hover{transform:translateY(-2px);box-shadow:var(--glow-cyan)}
-#search-btn:active{transform:translateY(0)}
 
-/* Suggestions */
-#suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:100;
-  background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--radius);
-  overflow:hidden;max-height:0;opacity:0;transition:max-height .3s ease,opacity .2s ease;
-  box-shadow:0 20px 60px rgba(0,0,0,.6)}
-#suggestions.visible{max-height:480px;opacity:1;overflow-y:auto}
-.suggestion-item{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;
-  border-bottom:1px solid var(--border);transition:background .15s}
-.suggestion-item:last-child{border-bottom:none}
-.suggestion-item:hover,.suggestion-item.active{background:var(--bg-hover)}
-.sug-img{width:48px;height:36px;border-radius:6px;background-size:cover;background-position:center;
-  background-color:var(--bg-deep);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+/* SUGGESTIONS */
+#suggestions{position:absolute;top:calc(100% + 6px);left:0;right:60px;z-index:200;
+  background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--r);
+  overflow:hidden;max-height:0;opacity:0;transition:max-height .3s,opacity .2s;
+  box-shadow:0 20px 60px rgba(0,0,0,.7)}
+#suggestions.open{max-height:460px;opacity:1;overflow-y:auto}
+.sug-item{display:flex;align-items:center;gap:11px;padding:9px 13px;cursor:pointer;
+  border-bottom:1px solid var(--border);transition:background .12s}
+.sug-item:last-child{border-bottom:none}
+.sug-item:hover,.sug-item.hi{background:var(--bg-hover)}
+.sug-thumb{width:50px;height:36px;border-radius:6px;background:var(--bg-deep);background-size:cover;
+  background-position:center;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
 .sug-info{flex:1;min-width:0}
-.sug-name{display:block;font-weight:600;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sug-meta{font-size:.75rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
-.sug-badge{font-size:.8rem;opacity:.6}
+.sug-name{display:block;font-weight:600;font-size:.93rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sug-meta{font-size:.72rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
 
-/* Game Info */
-#game-info{display:none;margin-bottom:28px;border-radius:var(--radius-lg);overflow:hidden;
-  border:1px solid var(--border-lit);animation:fadeSlideIn .4s ease}
-#game-info.visible{display:block}
-.game-banner{background-size:cover;background-position:center;background-color:var(--bg-card);min-height:160px;position:relative}
-.game-banner-overlay{background:linear-gradient(to right,rgba(5,5,8,.97) 40%,rgba(5,5,8,.5));
-  padding:28px 32px;min-height:160px;display:flex;align-items:center}
-.game-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.2rem,3vw,2rem);font-weight:900;
-  color:var(--cyan);text-shadow:0 0 20px rgba(0,245,212,.4);margin-bottom:10px}
-.game-meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
-.meta-chip{background:rgba(255,255,255,.06);border:1px solid var(--border-lit);border-radius:20px;
-  padding:3px 12px;font-size:.8rem;font-family:'JetBrains Mono',monospace;color:var(--text-2)}
-.meta-score{border-color:var(--orange);color:var(--orange)}
-.game-platforms{font-size:.8rem;color:var(--text-3);margin-top:4px}
+/* GAME BANNER */
+#game-banner{display:none;margin-bottom:28px;border-radius:var(--rl);overflow:hidden;
+  border:1px solid var(--border-lit);animation:fadeUp .4s ease}
+#game-banner.show{display:block}
+.banner-bg{background-size:cover;background-position:center top;background-color:var(--bg-card);min-height:180px}
+.banner-ov{background:linear-gradient(to right,rgba(5,5,8,.97) 35%,rgba(5,5,8,.4));
+  padding:28px 32px;min-height:180px;display:flex;align-items:center;gap:20px}
+.banner-cover{width:80px;height:110px;border-radius:8px;object-fit:cover;border:2px solid var(--border-lit);flex-shrink:0}
+.banner-info{flex:1}
+.banner-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.1rem,3vw,1.9rem);font-weight:900;
+  color:var(--cyan);text-shadow:0 0 20px rgba(0,245,212,.35);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}
+.chip{background:rgba(255,255,255,.06);border:1px solid var(--border-lit);border-radius:20px;
+  padding:2px 11px;font-size:.75rem;font-family:'JetBrains Mono',monospace;color:var(--text-2)}
+.chip.score{border-color:var(--orange);color:var(--orange)}
+.chip.rat{border-color:var(--yellow);color:var(--yellow)}
+.banner-plats{font-size:.78rem;color:var(--text-3);margin-top:4px}
+.banner-desc{font-size:.85rem;color:var(--text-2);margin-top:8px;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-/* Results */
-#results-panel{display:none;animation:fadeSlideIn .4s ease}
-#results-panel.visible{display:block}
-@keyframes fadeSlideIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+/* SCREENSHOTS STRIP */
+.screens-strip{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:rgba(0,0,0,.3);
+  scrollbar-width:thin;scrollbar-color:var(--border-lit) transparent}
+.screen-thumb{width:160px;height:90px;border-radius:8px;object-fit:cover;flex-shrink:0;
+  border:1px solid var(--border);cursor:pointer;transition:transform .2s,border-color .2s}
+.screen-thumb:hover{transform:scale(1.04);border-color:var(--cyan)}
 
-/* Category Tabs */
-#category-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-.cat-tab{display:flex;align-items:center;gap:7px;padding:10px 18px;background:var(--bg-card);
-  border:1px solid var(--border-lit);border-radius:var(--radius);color:var(--text-2);
-  font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s}
-.cat-tab:hover{border-color:var(--cat-color);color:var(--cat-color)}
-.cat-tab.active{background:rgba(255,255,255,.05);border-color:var(--cat-color);color:var(--cat-color);
-  box-shadow:0 0 20px rgba(0,245,212,.15)}
-.cat-icon{font-size:1rem}
+/* LIGHTBOX */
+#lightbox{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.9);
+  align-items:center;justify-content:center;cursor:zoom-out}
+#lightbox.show{display:flex}
+#lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;border:1px solid var(--border-lit)}
 
-/* Results Content */
-#results-content{background:var(--bg-card);border:1px solid var(--border-lit);
-  border-radius:var(--radius-lg);overflow:hidden;padding:24px}
-.results-header{display:flex;align-items:center;gap:10px;font-family:'Orbitron',sans-serif;
-  font-size:.9rem;color:var(--cat-color);text-transform:uppercase;letter-spacing:.1em;
-  margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
-.results-header em{font-style:normal;color:var(--text-1)}
+/* CATEGORY TABS */
+#cat-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.cat-btn{display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg-card);
+  border:1px solid var(--border-lit);border-radius:var(--r);color:var(--text-2);
+  font-family:'Rajdhani',sans-serif;font-size:.93rem;font-weight:600;cursor:pointer;transition:all .2s}
+.cat-btn:hover{border-color:var(--cc);color:var(--cc)}
+.cat-btn.on{background:rgba(255,255,255,.04);border-color:var(--cc);color:var(--cc);
+  box-shadow:0 0 18px rgba(0,245,212,.12)}
+@media(max-width:600px){.cat-btn span.lbl{display:none}.cat-btn{padding:9px 13px}}
 
-/* Result Cards */
-.result-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:20px}
-.result-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--bg-deep);
-  border:1px solid var(--border-lit);border-radius:var(--radius);text-decoration:none;color:var(--text-1);
-  position:relative;overflow:hidden;transition:border-color .2s,transform .2s;opacity:0;transform:translateY(10px)}
-.result-card.card-enter{animation:cardEnter .35s ease forwards}
-@keyframes cardEnter{to{opacity:1;transform:translateY(0)}}
-.result-card:hover{border-color:var(--cat-color);transform:translateY(-2px)}
-.result-card:hover .rc-glow{opacity:1}
-.rc-glow{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,212,.04),transparent);
+/* RESULTS PANEL */
+#results{display:none}
+#results.show{display:block}
+
+/* RESULTS BOX */
+.res-box{background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--rl);
+  overflow:hidden;padding:22px}
+.res-hdr{display:flex;align-items:center;gap:10px;font-family:'Orbitron',sans-serif;
+  font-size:.85rem;color:var(--cc);text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.res-hdr em{font-style:normal;color:var(--text-1)}
+
+/* VIDEO GRID */
+.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.vid-card{background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
+  overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s;
+  opacity:0;transform:translateY(10px)}
+.vid-card.in{animation:fadeUp .3s ease forwards}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+.vid-card:hover{transform:translateY(-3px);border-color:var(--cc,var(--cyan))}
+.vid-thumb-wrap{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--bg-void)}
+.vid-thumb{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.vid-card:hover .vid-thumb{transform:scale(1.04)}
+.vid-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.3);opacity:0;transition:opacity .2s}
+.vid-card:hover .vid-play{opacity:1}
+.play-ico{width:48px;height:48px;background:rgba(255,107,53,.9);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.vid-info{padding:11px 13px}
+.vid-title{font-weight:700;font-size:.88rem;line-height:1.35;margin-bottom:5px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vid-meta{font-size:.72rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;display:flex;gap:10px}
+.vid-ch{color:var(--text-2)}
+
+/* CHEAT / TIP CARDS */
+.link-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.link-card{display:flex;align-items:center;gap:13px;padding:15px 16px;background:var(--bg-deep);
+  border:1px solid var(--border-lit);border-radius:var(--r);text-decoration:none;color:var(--text-1);
+  position:relative;overflow:hidden;transition:border-color .2s,transform .2s;
+  opacity:0;transform:translateY(8px)}
+.link-card.in{animation:fadeUp .3s ease forwards}
+.link-card:hover{border-color:var(--cc);transform:translateY(-2px)}
+.link-card:hover .lc-glow{opacity:1}
+.lc-glow{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,212,.04),transparent);
   opacity:0;transition:opacity .2s;pointer-events:none}
-.rc-icon{font-size:1.8rem;flex-shrink:0}
-.rc-info{flex:1}
-.rc-site{font-weight:700;font-size:1rem;color:var(--text-1);margin-bottom:2px}
-.rc-action{font-size:.78rem;color:var(--cat-color,var(--cyan));font-family:'JetBrains Mono',monospace;opacity:.8}
+.lc-ico{font-size:1.7rem;flex-shrink:0}
+.lc-info{flex:1;min-width:0}
+.lc-site{font-weight:700;font-size:.95rem;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-desc{font-size:.75rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.lc-arr{font-size:.85rem;color:var(--cc);opacity:.7;flex-shrink:0}
 
-/* Quick Search */
-.quick-search-bar{display:flex;align-items:center;gap:10px;padding-top:16px;
-  border-top:1px solid var(--border);font-size:.85rem;color:var(--text-3);flex-wrap:wrap}
-.quick-link{padding:4px 14px;background:var(--bg-hover);border:1px solid var(--border-lit);
-  border-radius:20px;color:var(--text-2);text-decoration:none;font-size:.82rem;
-  font-family:'JetBrains Mono',monospace;transition:all .15s}
-.quick-link:hover{border-color:var(--cyan);color:var(--cyan)}
+/* RAWG SCREENSHOTS in results */
+.shots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+.shot-card{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);cursor:pointer;
+  aspect-ratio:16/9;opacity:0;transform:scale(.97)}
+.shot-card.in{animation:shotIn .3s ease forwards}
+@keyframes shotIn{to{opacity:1;transform:scale(1)}}
+.shot-card img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.shot-card:hover img{transform:scale(1.06)}
 
-/* DB Section */
-.db-section{margin-top:48px;padding:24px;background:var(--bg-card);border:1px solid var(--border);
-  border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:space-between;
-  gap:20px;flex-wrap:wrap}
-.db-info{flex:1}
-.db-title{font-family:'Orbitron',sans-serif;font-size:.8rem;text-transform:uppercase;
-  letter-spacing:.15em;color:var(--text-3);margin-bottom:4px}
-#db-status{font-size:.95rem;color:var(--text-2);font-weight:600}
-#last-updated{font-size:.78rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;margin-top:2px}
-#update-db-btn{background:transparent;border:1px solid var(--purple-dim);border-radius:var(--radius);
-  color:var(--purple);font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:700;
-  padding:10px 20px;cursor:pointer;transition:all .2s;white-space:nowrap}
-#update-db-btn:hover{background:rgba(123,47,255,.1);border-color:var(--purple);box-shadow:var(--glow-purple)}
-#update-db-btn:disabled{opacity:.4;cursor:not-allowed}
+/* GOOGLE SEARCH PREVIEW */
+.g-search-wrap{display:flex;flex-direction:column;gap:10px}
+.g-card{background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
+  padding:14px 16px;text-decoration:none;color:var(--text-1);transition:border-color .2s,transform .2s;
+  opacity:0;transform:translateY(8px)}
+.g-card.in{animation:fadeUp .3s ease forwards}
+.g-card:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.g-site{font-size:.72rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.g-title{font-weight:700;color:var(--cyan);margin-bottom:4px}
+.g-snippet{font-size:.83rem;color:var(--text-2);line-height:1.4}
 
-/* Footer */
-.site-footer{text-align:center;margin-top:60px;padding:24px 0;border-top:1px solid var(--border);
-  color:var(--text-3);font-size:.8rem;font-family:'JetBrains Mono',monospace}
-.site-footer a{color:var(--cyan);text-decoration:none}
+/* QUICK LINKS BAR */
+.quick-bar{display:flex;align-items:center;gap:8px;padding-top:14px;border-top:1px solid var(--border);
+  font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-top:16px}
+.ql{padding:4px 13px;background:var(--bg-hover);border:1px solid var(--border-lit);border-radius:20px;
+  color:var(--text-2);text-decoration:none;font-size:.78rem;font-family:'JetBrains Mono',monospace;transition:all .15s}
+.ql:hover{border-color:var(--cyan);color:var(--cyan)}
 
-/* Spinner */
-.loading-spinner{width:32px;height:32px;border:3px solid var(--border-lit);border-top-color:var(--cyan);
-  border-radius:50%;animation:spin .8s linear infinite;margin:24px auto}
-@keyframes spin{to{transform:rotate(360deg)}}
-.info-fallback{padding:20px;font-size:1.1rem;color:var(--text-2);text-align:center}
+/* LOADER */
+.loader{display:flex;flex-direction:column;align-items:center;gap:14px;padding:40px;color:var(--text-3)}
+.spin{width:34px;height:34px;border:3px solid var(--border-lit);border-top-color:var(--cyan);
+  border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loader-txt{font-family:'JetBrains Mono',monospace;font-size:.8rem}
 
-/* Responsive */
+/* DB SECTION */
+.db-sec{margin-top:44px;padding:22px;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--rl);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.db-lbl{font-family:'Orbitron',sans-serif;font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-3);margin-bottom:3px}
+#db-stat{font-size:.92rem;color:var(--text-2);font-weight:600}
+#db-ts{font-size:.74rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;margin-top:2px}
+#upd-btn{background:transparent;border:1px solid var(--purple-dim);border-radius:var(--r);
+  color:var(--purple);font-family:'Rajdhani',sans-serif;font-size:.88rem;font-weight:700;
+  padding:9px 18px;cursor:pointer;transition:all .2s;white-space:nowrap}
+#upd-btn:hover{background:rgba(123,47,255,.1);border-color:var(--purple);box-shadow:var(--glow-purple)}
+#upd-btn:disabled{opacity:.35;cursor:not-allowed}
+
+footer{text-align:center;margin-top:56px;padding:22px 0;border-top:1px solid var(--border);
+  color:var(--text-3);font-size:.77rem;font-family:'JetBrains Mono',monospace}
+footer a{color:var(--cyan);text-decoration:none}
+
 @media(max-width:768px){
-  .search-card{padding:20px}
-  .search-input-row{flex-direction:column}
-  #search-btn{width:100%}
-  .result-cards{grid-template-columns:1fr}
-  .cat-tab .cat-label{display:none}
-  .cat-tab{padding:10px 14px}
-  .game-banner-overlay{padding:20px}
-  .db-section{flex-direction:column;align-items:flex-start}
-}
-@media(max-width:400px){
-  .logo-text{font-size:1.6rem}
-  .app-wrap{padding:0 12px 60px}
+  .search-card{padding:18px 16px}
+  .vid-grid{grid-template-columns:1fr}
+  .banner-cover{display:none}
+  .db-sec{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
 <body>
-<div class="app-wrap">
+<div class="wrap">
 
-  <header class="site-header">
-    <div class="logo-row">
-      <span class="logo-icon">🎮</span>
-      <h1 class="logo-text">GAMEFINDER</h1>
+<header>
+  <div class="logo-row">
+    <span class="logo-icon">🎮</span>
+    <h1 class="logo-text">GAMEFINDER</h1>
+  </div>
+  <p class="logo-sub">Tipps · Cheats · Videos · Walkthroughs · Downloads</p>
+</header>
+
+<section class="search-card">
+  <div class="plat-row">
+    <div class="sel-wrap">
+      <label class="sel-label" for="mfg">Hersteller</label>
+      <select id="mfg"><option value="">— Hersteller wählen —</option></select>
     </div>
-    <p class="logo-sub">Tipps · Cheats · Videos · Walkthroughs · Downloads</p>
-  </header>
-
-  <section class="search-card">
-    <div class="platform-row">
-      <div class="select-wrap">
-        <label class="select-label" for="manufacturer-select">Hersteller</label>
-        <select id="manufacturer-select">
-          <option value="">— Hersteller wählen —</option>
-        </select>
+    <div class="sel-wrap">
+      <label class="sel-label" for="plat">Plattform</label>
+      <select id="plat" disabled><option value="">— erst Hersteller wählen —</option></select>
+    </div>
+  </div>
+  <div style="position:relative">
+    <div class="inp-row">
+      <div class="inp-wrap">
+        <span class="inp-icon">🕹️</span>
+        <input id="game-input" type="text" placeholder="Spieltitel eingeben…" autocomplete="off" autocorrect="off" spellcheck="false"/>
       </div>
-      <div class="select-wrap">
-        <label class="select-label" for="platform-select">Plattform</label>
-        <select id="platform-select" disabled>
-          <option value="">— erst Hersteller wählen —</option>
-        </select>
-      </div>
+      <button id="search-btn">SUCHEN</button>
     </div>
-    <div class="search-wrapper">
-      <div class="search-input-row">
-        <div class="search-input-wrap">
-          <span class="search-icon">🕹️</span>
-          <input id="game-input" type="text" placeholder="Spieltitel eingeben…"
-            autocomplete="off" autocorrect="off" spellcheck="false" />
-        </div>
-        <button id="search-btn">SUCHEN</button>
-      </div>
-      <div id="suggestions"></div>
-    </div>
-  </section>
+    <div id="suggestions"></div>
+  </div>
+</section>
 
-  <div id="game-info"></div>
+<!-- Game Banner -->
+<div id="game-banner"></div>
 
-  <section id="results-panel">
-    <div id="category-tabs"></div>
-    <div id="results-content"></div>
-  </section>
+<!-- Results -->
+<section id="results">
+  <div id="cat-tabs"></div>
+  <div class="res-box">
+    <div id="res-content"></div>
+  </div>
+</section>
 
-  <section class="db-section">
-    <div class="db-info">
-      <div class="db-title">💾 Lokale Spieldatenbank</div>
-      <div id="db-status">Prüfe Datenbank…</div>
-      <div id="last-updated"></div>
-    </div>
-    <button id="update-db-btn">🔄 Datenbank aktualisieren</button>
-  </section>
+<!-- DB -->
+<section class="db-sec">
+  <div>
+    <div class="db-lbl">💾 Lokale Spieldatenbank</div>
+    <div id="db-stat">Prüfe Datenbank…</div>
+    <div id="db-ts"></div>
+  </div>
+  <button id="upd-btn">🔄 Datenbank aktualisieren</button>
+</section>
 
-  <footer class="site-footer">
-    <p>GameFinder &copy; 2025 · Powered by <a href="https://rawg.io" target="_blank">RAWG.io API</a></p>
-  </footer>
+<!-- Lightbox -->
+<div id="lightbox"><img id="lb-img" src="" alt=""/></div>
 
+<footer>GameFinder &copy; 2025 · <a href="https://rawg.io" target="_blank">RAWG.io</a> · <a href="https://developers.google.com/youtube" target="_blank">YouTube API</a></footer>
 </div>
 
 <script>
-// ── Platform Data ──────────────────────────────────────────────────────────
-const PLATFORMS = {
-  PC:{label:"PC",icon:"🖥️",platforms:[
-    {id:4,name:"PC (Windows)",slug:"pc"},
-    {id:5,name:"macOS",slug:"mac"},
-    {id:6,name:"Linux",slug:"linux"}
-  ]},
-  Sony:{label:"Sony",icon:"🎮",platforms:[
-    {id:27,name:"PlayStation 1",slug:"playstation"},
-    {id:15,name:"PlayStation 2",slug:"playstation2"},
-    {id:16,name:"PlayStation 3",slug:"playstation3"},
-    {id:18,name:"PlayStation 4",slug:"playstation4"},
-    {id:187,name:"PlayStation 5",slug:"playstation5"},
-    {id:17,name:"PSP",slug:"psp"},
-    {id:19,name:"PS Vita",slug:"ps-vita"}
-  ]},
-  Nintendo:{label:"Nintendo",icon:"🕹️",platforms:[
-    {id:49,name:"NES",slug:"nes"},
-    {id:79,name:"SNES",slug:"snes"},
-    {id:83,name:"Nintendo 64",slug:"nintendo64"},
-    {id:105,name:"GameCube",slug:"gamecube"},
-    {id:10,name:"Wii",slug:"wii"},
-    {id:11,name:"Wii U",slug:"wiiu"},
-    {id:7,name:"Nintendo Switch",slug:"nintendo-switch"},
-    {id:24,name:"Game Boy",slug:"gameboy"},
-    {id:43,name:"Game Boy Advance",slug:"gba"},
-    {id:77,name:"Nintendo DS",slug:"nds"},
-    {id:137,name:"Nintendo 3DS",slug:"3ds"}
-  ]},
-  Microsoft:{label:"Microsoft",icon:"🎯",platforms:[
-    {id:80,name:"Xbox (Original)",slug:"xbox"},
-    {id:14,name:"Xbox 360",slug:"xbox360"},
-    {id:1,name:"Xbox One",slug:"xbox-one"},
-    {id:186,name:"Xbox Series X/S",slug:"xbox-series-x"}
-  ]},
-  Sega:{label:"Sega",icon:"⚡",platforms:[
-    {id:167,name:"Sega Master System",slug:"sega-master-system"},
-    {id:107,name:"Mega Drive / Genesis",slug:"sega-genesis"},
-    {id:119,name:"Sega 32X",slug:"sega-32x"},
-    {id:117,name:"Sega CD",slug:"sega-cd"},
-    {id:74,name:"Sega Saturn",slug:"sega-saturn"},
-    {id:106,name:"Dreamcast",slug:"dreamcast"},
-    {id:111,name:"Game Gear",slug:"game-gear"}
-  ]},
-  Atari:{label:"Atari",icon:"👾",platforms:[
-    {id:28,name:"Atari 2600",slug:"atari-2600"},
-    {id:31,name:"Atari 5200",slug:"atari-5200"},
-    {id:23,name:"Atari 7800",slug:"atari-7800"},
-    {id:25,name:"Atari Lynx",slug:"atari-lynx"},
-    {id:22,name:"Atari Jaguar",slug:"atari-jaguar"}
-  ]},
-  Mobile:{label:"Mobile",icon:"📱",platforms:[
-    {id:21,name:"Android",slug:"android"},
-    {id:3,name:"iOS",slug:"ios"}
-  ]}
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════════════════
+const CFG = {
+  rawgKey:    "d3f21eea74f841e287ec5890b83da8d5",
+  ytKey:      "AIzaSyAXlrYVq0IYiN18GvUq-6BeK4Z_mgCiAIg",
+  rawg:       "https://api.rawg.io/api",
+  yt:         "https://www.googleapis.com/youtube/v3"
 };
 
-const CATEGORIES = [
-  {id:"tips",      label:"Tipps & Tricks",  icon:"💡",color:"#00f5d4"},
-  {id:"cheats",    label:"Cheats & Codes",  icon:"🔓",color:"#f72585"},
-  {id:"videos",    label:"Videos",          icon:"📹",color:"#ff6b35"},
-  {id:"blogs",     label:"Blogs & Reviews", icon:"📝",color:"#7209b7"},
-  {id:"downloads", label:"Downloads & Mods",icon:"📥",color:"#4cc9f0"},
-  {id:"walkthroughs",label:"Walkthroughs",  icon:"🗺️",color:"#06ffa5"}
+// ═══════════════════════════════════════════════════════════════════════════
+// PLATFORM DATA
+// ═══════════════════════════════════════════════════════════════════════════
+const PLATFORMS = {
+  PC:{label:"PC",icon:"🖥️",platforms:[{id:4,name:"PC (Windows)"},{id:5,name:"macOS"},{id:6,name:"Linux"}]},
+  Sony:{label:"Sony",icon:"🎮",platforms:[
+    {id:27,name:"PlayStation 1"},{id:15,name:"PlayStation 2"},{id:16,name:"PlayStation 3"},
+    {id:18,name:"PlayStation 4"},{id:187,name:"PlayStation 5"},{id:17,name:"PSP"},{id:19,name:"PS Vita"}]},
+  Nintendo:{label:"Nintendo",icon:"🕹️",platforms:[
+    {id:49,name:"NES"},{id:79,name:"SNES"},{id:83,name:"Nintendo 64"},{id:105,name:"GameCube"},
+    {id:10,name:"Wii"},{id:11,name:"Wii U"},{id:7,name:"Nintendo Switch"},
+    {id:24,name:"Game Boy"},{id:43,name:"Game Boy Advance"},{id:77,name:"Nintendo DS"},{id:137,name:"Nintendo 3DS"}]},
+  Microsoft:{label:"Microsoft",icon:"🎯",platforms:[
+    {id:80,name:"Xbox (Original)"},{id:14,name:"Xbox 360"},{id:1,name:"Xbox One"},{id:186,name:"Xbox Series X/S"}]},
+  Sega:{label:"Sega",icon:"⚡",platforms:[
+    {id:167,name:"Sega Master System"},{id:107,name:"Mega Drive / Genesis"},{id:119,name:"Sega 32X"},
+    {id:117,name:"Sega CD"},{id:74,name:"Sega Saturn"},{id:106,name:"Dreamcast"},{id:111,name:"Game Gear"}]},
+  Atari:{label:"Atari",icon:"👾",platforms:[
+    {id:28,name:"Atari 2600"},{id:31,name:"Atari 5200"},{id:23,name:"Atari 7800"},
+    {id:25,name:"Atari Lynx"},{id:22,name:"Atari Jaguar"}]},
+  Mobile:{label:"Mobile",icon:"📱",platforms:[{id:21,name:"Android"},{id:3,name:"iOS"}]}
+};
+
+const CATS = [
+  {id:"videos",     label:"Videos",           icon:"📹", color:"#ff6b35"},
+  {id:"walkthroughs",label:"Walkthroughs",     icon:"🗺️", color:"#06ffa5"},
+  {id:"tips",       label:"Tipps & Tricks",    icon:"💡", color:"#00f5d4"},
+  {id:"cheats",     label:"Cheats & Codes",    icon:"🔓", color:"#f72585"},
+  {id:"screenshots",label:"Screenshots",       icon:"🖼️", color:"#4cc9f0"},
+  {id:"blogs",      label:"Blogs & Reviews",   icon:"📝", color:"#7b2fff"},
+  {id:"downloads",  label:"Downloads & Mods",  icon:"📥", color:"#ffd60a"}
 ];
 
-const RAWG_KEY = "d3f21eea74f841e287ec5890b83da8d5";
-const RAWG = "https://api.rawg.io/api";
-
-const SITE_ICONS = {
-  "GameFAQs":"📚","IGN":"🎮","IGN Guides":"📖","YouTube":"▶️",
-  "YouTube Tipps":"💡","YouTube Walkthrough":"🗺️","Twitch":"📡",
-  "Gamestar":"⭐","GamePro":"🕹️","Nexus Mods":"🔧","ModDB":"💾",
-  "Cheatcc":"🔓","Google":"🔍","GameFAQs Cheats":"💎","GameFAQs Walkthrough":"🗺️"
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════════
+let S = {
+  mfg:null, plat:null, game:null, gameSlug:null,
+  gameData:null, sugs:[], activeCat:null,
+  dbGames:[], dbTs:null
 };
 
-function buildLinks(game, platform, catId) {
-  const q = encodeURIComponent(game + (platform?" "+platform:""));
-  const g = encodeURIComponent(game);
-  const map = {
-    tips:[
-      {site:"GameFAQs",url:`https://gamefaqs.gamespot.com/search?game=${g}`},
-      {site:"IGN Guides",url:`https://www.ign.com/search?q=${q}+tips`},
-      {site:"Gamestar",url:`https://www.gamestar.de/suche/?keywords=${q}`},
-      {site:"Google",url:`https://www.google.com/search?q=${q}+tipps+tricks`}
-    ],
-    cheats:[
-      {site:"GameFAQs Cheats",url:`https://gamefaqs.gamespot.com/search?game=${g}&category=cheats`},
-      {site:"Cheatcc",url:`https://www.cheatcc.com/search/?q=${q}`},
-      {site:"IGN",url:`https://www.ign.com/search?q=${q}+cheats`},
-      {site:"Google",url:`https://www.google.com/search?q=${q}+cheats+codes`}
-    ],
-    videos:[
-      {site:"YouTube",url:`https://www.youtube.com/results?search_query=${q}+gameplay`},
-      {site:"YouTube Tipps",url:`https://www.youtube.com/results?search_query=${q}+tipps+deutsch`},
-      {site:"Twitch",url:`https://www.twitch.tv/search?term=${q}`},
-      {site:"Google",url:`https://www.google.com/search?q=${q}+video`}
-    ],
-    blogs:[
-      {site:"IGN",url:`https://www.ign.com/search?q=${q}`},
-      {site:"Gamestar",url:`https://www.gamestar.de/suche/?keywords=${q}`},
-      {site:"GamePro",url:`https://www.gamepro.de/suche/?keywords=${q}`},
-      {site:"Google",url:`https://www.google.com/search?q=${q}+blog+review`}
-    ],
-    downloads:[
-      {site:"Nexus Mods",url:`https://www.nexusmods.com/search/?gsearch=${g}`},
-      {site:"ModDB",url:`https://www.moddb.com/search?q=${q}`},
-      {site:"Google",url:`https://www.google.com/search?q=${q}+download+mod`}
-    ],
-    walkthroughs:[
-      {site:"GameFAQs Walkthrough",url:`https://gamefaqs.gamespot.com/search?game=${g}&category=walkthrough`},
-      {site:"YouTube Walkthrough",url:`https://www.youtube.com/results?search_query=${q}+walkthrough`},
-      {site:"IGN Guides",url:`https://www.ign.com/search?q=${q}+walkthrough`},
-      {site:"Google",url:`https://www.google.com/search?q=${q}+walkthrough+komplettl%C3%B6sung`}
-    ]
-  };
-  return map[catId]||[];
-}
+// ═══════════════════════════════════════════════════════════════════════════
+// DOM
+// ═══════════════════════════════════════════════════════════════════════════
+const $  = id => document.getElementById(id);
+const mfgEl   = $("mfg"), platEl  = $("plat");
+const gameInp = $("game-input"), sugBox = $("suggestions");
+const searchBt= $("search-btn"), banner = $("game-banner");
+const results = $("results"),   catTabs = $("cat-tabs");
+const resCtnt = $("res-content");
+const dbStat  = $("db-stat"),   dbTs   = $("db-ts"), updBtn = $("upd-btn");
+const lightbox= $("lightbox"),  lbImg  = $("lb-img");
 
-// ── State ──────────────────────────────────────────────────────────────────
-let ST = { manufacturer:null, platform:null, game:null, gameSlug:null,
-           suggestions:[], activeCategory:null, dbGames:[], dbUpdated:null };
-
-// ── Refs ───────────────────────────────────────────────────────────────────
-const mfgSel   = document.getElementById("manufacturer-select");
-const platSel  = document.getElementById("platform-select");
-const gameInp  = document.getElementById("game-input");
-const sugBox   = document.getElementById("suggestions");
-const searchBt = document.getElementById("search-btn");
-const catTabs  = document.getElementById("category-tabs");
-const resPan   = document.getElementById("results-panel");
-const resCtnt  = document.getElementById("results-content");
-const gameInfo = document.getElementById("game-info");
-const dbStat   = document.getElementById("db-status");
-const updBtn   = document.getElementById("update-db-btn");
-const lastUpd  = document.getElementById("last-updated");
-
-// ── Init ───────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
 function init() {
-  // Populate manufacturers
-  mfgSel.innerHTML = '<option value="">— Hersteller wählen —</option>';
+  // Manufacturers
   Object.entries(PLATFORMS).forEach(([k,v]) => {
     const o = document.createElement("option");
     o.value = k; o.textContent = `${v.icon} ${v.label}`;
-    mfgSel.appendChild(o);
+    mfgEl.appendChild(o);
   });
 
-  mfgSel.addEventListener("change", () => {
-    ST.manufacturer = mfgSel.value; ST.platform = null;
-    platSel.innerHTML = '<option value="">— Plattform wählen —</option>';
-    platSel.disabled = !ST.manufacturer;
-    if (ST.manufacturer) {
-      PLATFORMS[ST.manufacturer].platforms.forEach(p => {
+  mfgEl.addEventListener("change", () => {
+    S.mfg = mfgEl.value; S.plat = null;
+    platEl.innerHTML = '<option value="">— Plattform wählen —</option>';
+    platEl.disabled = !S.mfg;
+    if (S.mfg) {
+      PLATFORMS[S.mfg].platforms.forEach(p => {
         const o = document.createElement("option");
-        o.value = p.id; o.dataset.name = p.name; o.dataset.slug = p.slug;
-        o.textContent = p.name; platSel.appendChild(o);
+        o.value = p.id; o.dataset.name = p.name; o.textContent = p.name;
+        platEl.appendChild(o);
       });
-      platSel.classList.add("pulse");
-      setTimeout(()=>platSel.classList.remove("pulse"),600);
+      platEl.classList.add("pulse");
+      setTimeout(()=>platEl.classList.remove("pulse"),600);
     }
   });
 
-  platSel.addEventListener("change", () => {
-    const o = platSel.selectedOptions[0];
-    ST.platform = o && o.value ? {id:o.value,name:o.dataset.name,slug:o.dataset.slug} : null;
+  platEl.addEventListener("change", () => {
+    const o = platEl.selectedOptions[0];
+    S.plat = o && o.value ? {id:o.value, name:o.dataset.name} : null;
   });
 
-  gameInp.addEventListener("input", debounce(onGameInput, 300));
+  gameInp.addEventListener("input", debounce(onInput, 280));
   gameInp.addEventListener("keydown", e => {
-    if (e.key==="Enter") { hideSug(); doSearch(); }
-    if (e.key==="Escape") hideSug();
+    if (e.key==="Enter")     { hideSug(); doSearch(); }
+    if (e.key==="Escape")    hideSug();
     if (e.key==="ArrowDown") navSug(1);
     if (e.key==="ArrowUp")   navSug(-1);
   });
-  document.addEventListener("click", e => { if (!e.target.closest(".search-wrapper")) hideSug(); });
+  document.addEventListener("click", e => { if (!e.target.closest("[style*='position:relative']") && !e.target.closest(".inp-row")) hideSug(); });
   searchBt.addEventListener("click", doSearch);
   updBtn.addEventListener("click", updateDB);
+  lightbox.addEventListener("click", () => lightbox.classList.remove("show"));
   loadDB();
 }
 
-// ── Autocomplete ───────────────────────────────────────────────────────────
-async function onGameInput() {
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTOCOMPLETE
+// ═══════════════════════════════════════════════════════════════════════════
+async function onInput() {
   const q = gameInp.value.trim();
   if (q.length < 2) { hideSug(); return; }
-  const local = ST.dbGames.filter(g => g.name.toLowerCase().includes(q.toLowerCase())).slice(0,4);
+  const local = S.dbGames.filter(g => g.name.toLowerCase().includes(q.toLowerCase())).slice(0,4);
   try {
-    const pParam = ST.platform ? `&platforms=${ST.platform.id}` : "";
-    const r = await fetch(`${RAWG}/games?search=${encodeURIComponent(q)}${pParam}&page_size=8&key=${RAWG_KEY}`);
+    const pp = S.plat ? `&platforms=${S.plat.id}` : "";
+    const r = await fetch(`${CFG.rawg}/games?search=${enc(q)}${pp}&page_size=8&key=${CFG.rawgKey}`);
     const d = await r.json();
-    const rawg = (d.results||[]).map(g=>({name:g.name,slug:g.slug,released:g.released,bg:g.background_image,rating:g.rating}));
-    const seen = new Set();
-    const merged = [...local.map(g=>({...g,src:"local"})), ...rawg]
-      .filter(g=>{ if(seen.has(g.name)) return false; seen.add(g.name); return true; }).slice(0,8);
-    ST.suggestions = merged;
-    renderSug(merged);
-  } catch { if(local.length) renderSug(local); }
+    const seen = new Set(); const merged = [];
+    [...local, ...(d.results||[]).map(g=>({name:g.name,slug:g.slug,released:g.released,bg:g.background_image,rating:g.rating}))]
+      .forEach(g => { if (!seen.has(g.name)) { seen.add(g.name); merged.push(g); } });
+    S.sugs = merged.slice(0,8);
+    renderSug();
+  } catch { if (local.length) { S.sugs = local; renderSug(); } }
 }
 
-function renderSug(games) {
-  if (!games.length) { hideSug(); return; }
-  sugBox.innerHTML = games.map((g,i) => `
-    <div class="suggestion-item" data-i="${i}">
-      <div class="sug-img" style="background-image:url('${g.bg||""}')">
+function renderSug() {
+  if (!S.sugs.length) { hideSug(); return; }
+  sugBox.innerHTML = S.sugs.map((g,i)=>`
+    <div class="sug-item" data-i="${i}">
+      <div class="sug-thumb" style="background-image:url('${g.bg||""}')">
         ${!g.bg?"🎮":""}
       </div>
       <div class="sug-info">
-        <span class="sug-name">${g.name}</span>
+        <span class="sug-name">${esc(g.name)}</span>
         <span class="sug-meta">${g.released?g.released.slice(0,4):""}${g.rating?` · ⭐${g.rating.toFixed(1)}`:""}</span>
       </div>
-      ${g.src==="local"?'<span class="sug-badge">💾</span>':""}
     </div>`).join("");
-  sugBox.querySelectorAll(".suggestion-item").forEach((el,i) => {
-    el.addEventListener("click",()=>selectGame(games[i]));
-    el.addEventListener("mouseenter",()=>{
-      sugBox.querySelectorAll(".suggestion-item").forEach(s=>s.classList.remove("active"));
-      el.classList.add("active");
-    });
+  sugBox.querySelectorAll(".sug-item").forEach((el,i)=>{
+    el.addEventListener("click",()=>selectGame(S.sugs[i]));
+    el.addEventListener("mouseenter",()=>{ sugBox.querySelectorAll(".sug-item").forEach(x=>x.classList.remove("hi")); el.classList.add("hi"); });
   });
-  sugBox.classList.add("visible");
+  sugBox.classList.add("open");
 }
 
-function hideSug() { sugBox.classList.remove("visible"); }
+function hideSug() { sugBox.classList.remove("open"); }
 
 function selectGame(g) {
-  ST.game = g.name; ST.gameSlug = g.slug;
+  S.game = g.name; S.gameSlug = g.slug||null;
   gameInp.value = g.name; hideSug();
-  fetchGameInfo(g.slug||g.name);
+  loadGameBanner(g.slug||g.name, g);
 }
 
 function navSug(d) {
-  const items = [...sugBox.querySelectorAll(".suggestion-item")];
+  const items = [...sugBox.querySelectorAll(".sug-item")];
   if (!items.length) return;
-  const cur = sugBox.querySelector(".suggestion-item.active");
+  const cur = sugBox.querySelector(".sug-item.hi");
   let idx = cur ? items.indexOf(cur)+d : (d===1?0:items.length-1);
   idx = (idx+items.length)%items.length;
-  items.forEach(i=>i.classList.remove("active"));
-  items[idx].classList.add("active"); items[idx].scrollIntoView({block:"nearest"});
+  items.forEach(x=>x.classList.remove("hi")); items[idx].classList.add("hi");
+  items[idx].scrollIntoView({block:"nearest"});
 }
 
-// ── Game Info ──────────────────────────────────────────────────────────────
-async function fetchGameInfo(slugOrName) {
-  gameInfo.innerHTML = '<div class="loading-spinner"></div>';
-  gameInfo.classList.add("visible");
+// ═══════════════════════════════════════════════════════════════════════════
+// GAME BANNER
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadGameBanner(slugOrName, hint) {
+  banner.innerHTML = `<div class="banner-bg"><div class="banner-ov"><div class="spin" style="margin:0"></div></div></div>`;
+  banner.classList.add("show");
   try {
-    const r = await fetch(`${RAWG}/games/${slugOrName}?key=${RAWG_KEY}`);
+    const r = await fetch(`${CFG.rawg}/games/${slugOrName}?key=${CFG.rawgKey}`);
     if (!r.ok) throw new Error();
     const g = await r.json();
-    const plats = (g.platforms||[]).map(p=>p.platform.name).join(", ");
+    S.gameData = g; S.gameSlug = g.slug;
+    const plats = (g.platforms||[]).map(p=>p.platform.name).slice(0,5).join(", ");
     const genres = (g.genres||[]).map(x=>x.name).join(", ");
-    gameInfo.innerHTML = `
-      <div class="game-banner" style="background-image:url('${g.background_image||""}')">
-        <div class="game-banner-overlay">
-          <div>
-            <h2 class="game-title">${g.name}</h2>
-            <div class="game-meta-row">
-              ${g.released?`<span class="meta-chip">📅 ${g.released}</span>`:""}
-              ${g.rating?`<span class="meta-chip">⭐ ${g.rating}/5</span>`:""}
-              ${genres?`<span class="meta-chip">🎭 ${genres}</span>`:""}
-              ${g.metacritic?`<span class="meta-chip meta-score">Metacritic: ${g.metacritic}</span>`:""}
+    const devs   = (g.developers||[]).map(x=>x.name).join(", ");
+    const shots  = (g.short_screenshots||[]).slice(1,6);
+    banner.innerHTML = `
+      <div class="banner-bg" style="background-image:url('${g.background_image||""}')">
+        <div class="banner-ov">
+          ${g.background_image_additional?`<img class="banner-cover" src="${g.background_image_additional}" alt="${esc(g.name)}"/>`:``}
+          <div class="banner-info">
+            <div class="banner-title">${esc(g.name)}</div>
+            <div class="chips">
+              ${g.released?`<span class="chip">📅 ${g.released}</span>`:""}
+              ${g.rating?`<span class="chip rat">⭐ ${g.rating.toFixed(1)}/5</span>`:""}
+              ${genres?`<span class="chip">🎭 ${genres}</span>`:""}
+              ${g.metacritic?`<span class="chip score">Metacritic ${g.metacritic}</span>`:""}
+              ${devs?`<span class="chip">🏢 ${devs}</span>`:""}
             </div>
-            ${plats?`<div class="game-platforms">🖥️ ${plats}</div>`:""}
+            ${plats?`<div class="banner-plats">🖥️ ${plats}</div>`:""}
+            ${g.description_raw?`<div class="banner-desc">${esc(g.description_raw.slice(0,200))}…</div>`:""}
           </div>
         </div>
-      </div>`;
+      </div>
+      ${shots.length?`
+      <div class="screens-strip">
+        ${shots.map(s=>`<img class="screen-thumb" src="${s.image}" alt="screenshot" loading="lazy" onclick="openLB('${s.image}')">`).join("")}
+      </div>`:""}`;
   } catch {
-    gameInfo.innerHTML = `<p class="info-fallback">🎮 ${slugOrName}</p>`;
+    banner.innerHTML = `<div class="banner-bg"><div class="banner-ov"><div class="banner-info"><div class="banner-title">${esc(slugOrName)}</div></div></div></div>`;
   }
 }
 
-// ── Search ─────────────────────────────────────────────────────────────────
+function openLB(src) { lbImg.src = src; lightbox.classList.add("show"); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════════════════════════════════
 function doSearch() {
   const name = gameInp.value.trim();
-  if (!name) { gameInp.classList.add("shake"); setTimeout(()=>gameInp.classList.remove("shake"),500); return; }
-  ST.game = name;
-  if (!ST.gameSlug) fetchGameInfo(name);
-  catTabs.innerHTML = CATEGORIES.map(c=>`
-    <button class="cat-tab" data-cat="${c.id}" style="--cat-color:${c.color}">
-      <span class="cat-icon">${c.icon}</span>
-      <span class="cat-label">${c.label}</span>
+  if (!name) { gameInp.classList.add("shake"); setTimeout(()=>gameInp.classList.remove("shake"),400); return; }
+  S.game = name;
+  if (!S.gameSlug) loadGameBanner(name);
+
+  // Build tabs
+  catTabs.innerHTML = CATS.map(c=>`
+    <button class="cat-btn" data-cat="${c.id}" style="--cc:${c.color}">
+      <span>${c.icon}</span><span class="lbl">${c.label}</span>
     </button>`).join("");
-  catTabs.querySelectorAll(".cat-tab").forEach(b=>b.addEventListener("click",()=>openCat(b.dataset.cat)));
-  resPan.classList.add("visible");
-  resPan.scrollIntoView({behavior:"smooth",block:"start"});
-  openCat(CATEGORIES[0].id);
+  catTabs.querySelectorAll(".cat-btn").forEach(b=>b.addEventListener("click",()=>openCat(b.dataset.cat)));
+  results.classList.add("show");
+  results.scrollIntoView({behavior:"smooth",block:"start"});
+  openCat("videos");
 }
 
-function openCat(catId) {
-  ST.activeCategory = catId;
-  catTabs.querySelectorAll(".cat-tab").forEach(b=>b.classList.toggle("active",b.dataset.cat===catId));
-  const cat = CATEGORIES.find(c=>c.id===catId);
-  const pName = ST.platform?.name || ST.manufacturer || "";
-  const links = buildLinks(ST.game, pName, catId);
+// ═══════════════════════════════════════════════════════════════════════════
+// CATEGORY ROUTER
+// ═══════════════════════════════════════════════════════════════════════════
+function openCat(id) {
+  S.activeCat = id;
+  catTabs.querySelectorAll(".cat-btn").forEach(b=>b.classList.toggle("on",b.dataset.cat===id));
+  const cat = CATS.find(c=>c.id===id);
+  document.documentElement.style.setProperty("--cc", cat.color);
+  resCtnt.innerHTML = `<div class="loader"><div class="spin"></div><div class="loader-txt">Lade ${cat.label}…</div></div>`;
+  switch(id) {
+    case "videos":      loadYT("gameplay");        break;
+    case "walkthroughs":loadYT("walkthrough komplettlösung"); break;
+    case "tips":        loadTips();                break;
+    case "cheats":      loadCheats();              break;
+    case "screenshots": loadScreenshots();         break;
+    case "blogs":       loadBlogs();               break;
+    case "downloads":   loadDownloads();           break;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// YOUTUBE
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadYT(suffix) {
+  const cat = CATS.find(c=>c.id===S.activeCat);
+  const platStr = S.plat?.name || "";
+  const q = `${S.game}${platStr?" "+platStr:""} ${suffix}`;
+  try {
+    const r = await fetch(`${CFG.yt}/search?part=snippet&q=${enc(q)}&type=video&maxResults=12&relevanceLanguage=de&key=${CFG.ytKey}`);
+    const d = await r.json();
+    if (!d.items?.length) throw new Error("keine Ergebnisse");
+    const html = `
+      <div class="res-hdr" style="--cc:${cat.color}">
+        <span>${cat.icon}</span>
+        <span>${cat.label} für <em>${esc(S.game)}</em>${platStr?` · <em>${platStr}</em>`:""}</span>
+      </div>
+      <div class="vid-grid">
+        ${d.items.map((v,i)=>{
+          const id  = v.id.videoId;
+          const sn  = v.snippet;
+          const thumb = sn.thumbnails.medium?.url || sn.thumbnails.default?.url;
+          const views = "";
+          return `
+          <div class="vid-card" style="animation-delay:${i*60}ms;--cc:${cat.color}" onclick="window.open('https://www.youtube.com/watch?v=${id}','_blank')">
+            <div class="vid-thumb-wrap">
+              <img class="vid-thumb" src="${thumb}" alt="${esc(sn.title)}" loading="lazy"/>
+              <div class="vid-play"><div class="play-ico">▶</div></div>
+            </div>
+            <div class="vid-info">
+              <div class="vid-title">${esc(sn.title)}</div>
+              <div class="vid-meta">
+                <span class="vid-ch">${esc(sn.channelTitle)}</span>
+                <span>${formatDate(sn.publishedAt)}</span>
+              </div>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+      ${quickBar(q, cat)}`;
+    resCtnt.innerHTML = html;
+    resCtnt.querySelectorAll(".vid-card").forEach((c,i)=>{
+      setTimeout(()=>c.classList.add("in"), i*55);
+    });
+  } catch(e) {
+    resCtnt.innerHTML = fallbackLinks(cat, q);
+    animCards();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCREENSHOTS (RAWG)
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadScreenshots() {
+  const cat = CATS.find(c=>c.id==="screenshots");
+  if (!S.gameSlug && !S.gameData) {
+    resCtnt.innerHTML = fallbackLinks(cat, S.game+" screenshots"); animCards(); return;
+  }
+  try {
+    const slug = S.gameSlug || S.gameData?.slug;
+    const r = await fetch(`${CFG.rawg}/games/${slug}/screenshots?key=${CFG.rawgKey}&page_size=20`);
+    const d = await r.json();
+    if (!d.results?.length) throw new Error();
+    resCtnt.innerHTML = `
+      <div class="res-hdr" style="--cc:${cat.color}">
+        <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
+      </div>
+      <div class="shots-grid">
+        ${d.results.map((s,i)=>`
+          <div class="shot-card" style="animation-delay:${i*40}ms" onclick="openLB('${s.image}')">
+            <img src="${s.image}" alt="screenshot" loading="lazy"/>
+          </div>`).join("")}
+      </div>`;
+    resCtnt.querySelectorAll(".shot-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*40));
+  } catch {
+    resCtnt.innerHTML = fallbackLinks(cat, S.game+" screenshots");
+    animCards();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TIPS (GameFAQs + Google Links)
+// ═══════════════════════════════════════════════════════════════════════════
+function loadTips() {
+  const cat = CATS.find(c=>c.id==="tips");
+  const g = enc(S.game), gq = enc(S.game+" "+(S.plat?.name||""));
+  const links = [
+    {ico:"📚",site:"GameFAQs – FAQs & Guides",desc:"Offizielle FAQ-Datenbank",url:`https://gamefaqs.gamespot.com/search?game=${g}`},
+    {ico:"📖",site:"IGN – Guide",desc:"Ausführliche Spielguides",url:`https://www.ign.com/search?q=${gq}+guide`},
+    {ico:"⭐",site:"Gamestar.de",desc:"Deutsche Spieleseite",url:`https://www.gamestar.de/suche/?keywords=${gq}+tipps`},
+    {ico:"🕹️",site:"GamePro.de",desc:"Tipps & Tricks auf Deutsch",url:`https://www.gamepro.de/suche/?keywords=${gq}`},
+    {ico:"🔍",site:"Google – Tipps",desc:`„${S.game}" Tipps Tricks deutsch`,url:`https://www.google.de/search?q=${gq}+tipps+tricks`},
+    {ico:"🔍",site:"Google – Guides",desc:`„${S.game}" guide komplettlösung`,url:`https://www.google.de/search?q=${gq}+guide+kompleттlösung`}
+  ];
   resCtnt.innerHTML = `
-    <div class="results-header" style="--cat-color:${cat.color}">
-      <span>${cat.icon}</span>
-      <span>${cat.label} für <em>${ST.game}</em>${pName?` auf <em>${pName}</em>`:""}</span>
+    <div class="res-hdr" style="--cc:${cat.color}">
+      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
     </div>
-    <div class="result-cards">
-      ${links.map(l=>`
-        <a class="result-card" href="${l.url}" target="_blank" rel="noopener" style="--cat-color:${cat.color}">
-          <div class="rc-icon">${SITE_ICONS[l.site]||"🌐"}</div>
-          <div class="rc-info">
-            <div class="rc-site">${l.site}</div>
-            <div class="rc-action">Jetzt suchen →</div>
-          </div>
-          <div class="rc-glow"></div>
-        </a>`).join("")}
+    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
+    ${quickBar(S.game+" tipps tricks", cat)}`;
+  animCards();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHEATS
+// ═══════════════════════════════════════════════════════════════════════════
+function loadCheats() {
+  const cat = CATS.find(c=>c.id==="cheats");
+  const g = enc(S.game), gq = enc(S.game+" "+(S.plat?.name||""));
+  const links = [
+    {ico:"💎",site:"GameFAQs – Cheats",desc:"Cheat-Codes Datenbank",url:`https://gamefaqs.gamespot.com/search?game=${g}&category=cheats`},
+    {ico:"🔓",site:"Cheatcc.com",desc:"Cheats & Cheat-Codes",url:`https://www.cheatcc.com/search/?q=${g}`},
+    {ico:"🎮",site:"IGN – Cheats",desc:"IGN Cheat-Datenbank",url:`https://www.ign.com/search?q=${gq}+cheats`},
+    {ico:"🔑",site:"Cheats.de",desc:"Deutsche Cheat-Seite",url:`https://www.cheats.de/suche/?q=${g}`},
+    {ico:"🔍",site:"Google – Cheats",desc:`„${S.game}" cheat codes`,url:`https://www.google.de/search?q=${gq}+cheat+codes`},
+    {ico:"🔍",site:"Google – Trainer",desc:`„${S.game}" trainer`,url:`https://www.google.de/search?q=${gq}+trainer`}
+  ];
+  resCtnt.innerHTML = `
+    <div class="res-hdr" style="--cc:${cat.color}">
+      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
     </div>
-    <div class="quick-search-bar">
-      <span>Eigene Suche:</span>
-      <a class="quick-link" href="https://www.google.com/search?q=${encodeURIComponent(ST.game+" "+pName+" "+cat.label)}" target="_blank">Google</a>
-      <a class="quick-link" href="https://duckduckgo.com/?q=${encodeURIComponent(ST.game+" "+pName+" "+cat.label)}" target="_blank">DuckDuckGo</a>
+    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
+    ${quickBar(S.game+" cheats codes", cat)}`;
+  animCards();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BLOGS / REVIEWS
+// ═══════════════════════════════════════════════════════════════════════════
+function loadBlogs() {
+  const cat = CATS.find(c=>c.id==="blogs");
+  const gq = enc(S.game+" "+(S.plat?.name||""));
+  const links = [
+    {ico:"🎮",site:"IGN – Review",desc:"Internationales Review",url:`https://www.ign.com/search?q=${gq}+review`},
+    {ico:"⭐",site:"Gamestar.de",desc:"Test & Wertung",url:`https://www.gamestar.de/suche/?keywords=${gq}+test`},
+    {ico:"🕹️",site:"GamePro.de",desc:"Deutsches Review",url:`https://www.gamepro.de/suche/?keywords=${gq}+test`},
+    {ico:"🏆",site:"Metacritic",desc:"Aggregierte Kritiken",url:`https://www.metacritic.com/search/${enc(S.game)}/`},
+    {ico:"🔍",site:"Google – Test",desc:`„${S.game}" test review 2024`,url:`https://www.google.de/search?q=${gq}+test+review`},
+    {ico:"📰",site:"Google – News",desc:`Aktuelle Neuigkeiten`,url:`https://www.google.de/search?q=${gq}&tbm=nws`}
+  ];
+  resCtnt.innerHTML = `
+    <div class="res-hdr" style="--cc:${cat.color}">
+      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
+    </div>
+    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
+    ${quickBar(S.game+" test review", cat)}`;
+  animCards();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DOWNLOADS / MODS
+// ═══════════════════════════════════════════════════════════════════════════
+function loadDownloads() {
+  const cat = CATS.find(c=>c.id==="downloads");
+  const g = enc(S.game), gq = enc(S.game+" "+(S.plat?.name||""));
+  const links = [
+    {ico:"🔧",site:"Nexus Mods",desc:"Größte Mod-Datenbank",url:`https://www.nexusmods.com/search/?gsearch=${g}`},
+    {ico:"💾",site:"ModDB",desc:"Mods & Total Conversions",url:`https://www.moddb.com/search?q=${g}`},
+    {ico:"🎮",site:"Steam Workshop",desc:"Steam Mods & DLC",url:`https://steamcommunity.com/search/hub?text=${g}`},
+    {ico:"🔍",site:"Google – Mods",desc:`„${S.game}" mods download`,url:`https://www.google.de/search?q=${gq}+mods+download`},
+    {ico:"🔍",site:"Google – Patch",desc:`„${S.game}" patch update`,url:`https://www.google.de/search?q=${gq}+patch`},
+    {ico:"📦",site:"GitHub",desc:"Open-Source Mods & Tools",url:`https://github.com/search?q=${g}+game+mod`}
+  ];
+  resCtnt.innerHTML = `
+    <div class="res-hdr" style="--cc:${cat.color}">
+      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
+    </div>
+    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
+    ${quickBar(S.game+" mods download", cat)}`;
+  animCards();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPERS – UI
+// ═══════════════════════════════════════════════════════════════════════════
+function linkCard(l, i, color) {
+  return `
+    <a class="link-card" href="${l.url}" target="_blank" rel="noopener"
+       style="animation-delay:${i*60}ms;--cc:${color}">
+      <div class="lc-ico">${l.ico}</div>
+      <div class="lc-info">
+        <div class="lc-site">${l.site}</div>
+        <div class="lc-desc">${l.desc}</div>
+      </div>
+      <div class="lc-arr">→</div>
+      <div class="lc-glow"></div>
+    </a>`;
+}
+
+function fallbackLinks(cat, q) {
+  const gq = enc(q);
+  const links = [
+    {ico:"🔍",site:"Google.de suchen",desc:q,url:`https://www.google.de/search?q=${gq}`},
+    {ico:"▶️",site:"YouTube suchen",desc:q,url:`https://www.youtube.com/results?search_query=${gq}`}
+  ];
+  return `
+    <div class="res-hdr" style="--cc:${cat.color}">
+      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
+    </div>
+    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
+    ${quickBar(q, cat)}`;
+}
+
+function quickBar(q, cat) {
+  return `
+    <div class="quick-bar">
+      <span>Direkt suchen:</span>
+      <a class="ql" href="https://www.google.de/search?q=${enc(q)}" target="_blank">🔍 Google.de</a>
+      <a class="ql" href="https://www.youtube.com/results?search_query=${enc(q)}" target="_blank">▶️ YouTube</a>
+      <a class="ql" href="https://duckduckgo.com/?q=${enc(q)}" target="_blank">🦆 DuckDuckGo</a>
     </div>`;
-  document.querySelectorAll(".result-card").forEach((c,i)=>{
-    c.style.animationDelay=`${i*80}ms`; c.classList.add("card-enter");
+}
+
+function animCards() {
+  resCtnt.querySelectorAll(".link-card,.g-card,.vid-card,.shot-card").forEach((c,i)=>{
+    setTimeout(()=>c.classList.add("in"), i*55);
   });
 }
 
-// ── Database ───────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// DATABASE
+// ═══════════════════════════════════════════════════════════════════════════
 function loadDB() {
   try {
     const raw = localStorage.getItem("gf_games");
-    const ts  = localStorage.getItem("gf_updated");
+    const ts  = localStorage.getItem("gf_ts");
     if (raw) {
-      ST.dbGames = JSON.parse(raw); ST.dbUpdated = ts;
-      dbStat.textContent = `${ST.dbGames.length.toLocaleString()} Spiele in der Datenbank`;
-      lastUpd.textContent = ts ? `Zuletzt aktualisiert: ${new Date(ts).toLocaleDateString("de-DE")}` : "";
-    } else { dbStat.textContent = "Datenbank leer – bitte aktualisieren"; }
+      S.dbGames = JSON.parse(raw); S.dbTs = ts;
+      dbStat.textContent = `${S.dbGames.length.toLocaleString()} Spiele lokal gespeichert`;
+      dbTs.textContent = ts ? `Aktualisiert: ${new Date(ts).toLocaleDateString("de-DE")}` : "";
+    } else { dbStat.textContent = "Leer – bitte aktualisieren für bessere Autovervollständigung"; }
   } catch { dbStat.textContent = "Fehler beim Laden"; }
 }
 
 async function updateDB() {
-  updBtn.disabled = true; updBtn.textContent = "⏳ Lade...";
-  const all = []; let page = 1; const max = 20;
+  updBtn.disabled = true; updBtn.textContent = "⏳ Lade…";
+  const all = []; let page = 1;
   try {
-    while (page <= max) {
-      const r = await fetch(`${RAWG}/games?page=${page}&page_size=40&ordering=-rating&key=${RAWG_KEY}`);
+    while (page <= 25) {
+      const r = await fetch(`${CFG.rawg}/games?page=${page}&page_size=40&ordering=-rating&key=${CFG.rawgKey}`);
       const d = await r.json();
       if (!d.results?.length) break;
       all.push(...d.results.map(g=>({name:g.name,slug:g.slug,released:g.released,
-        bg:g.background_image,rating:g.rating,
-        platforms:(g.platforms||[]).map(p=>p.platform.id)})));
-      dbStat.textContent = `Geladen: ${all.length} Spiele (Seite ${page}/${max})...`;
-      page++; await new Promise(r=>setTimeout(r,120));
+        bg:g.background_image,rating:g.rating,platforms:(g.platforms||[]).map(p=>p.platform.id)})));
+      dbStat.textContent = `Lade… ${all.length} Spiele (Seite ${page}/25)`;
+      page++; await sleep(100);
     }
-    ST.dbGames = all; ST.dbUpdated = new Date().toISOString();
+    S.dbGames = all;
+    const ts = new Date().toISOString();
     localStorage.setItem("gf_games", JSON.stringify(all));
-    localStorage.setItem("gf_updated", ST.dbUpdated);
+    localStorage.setItem("gf_ts", ts);
     dbStat.textContent = `✅ ${all.length.toLocaleString()} Spiele gespeichert`;
-    lastUpd.textContent = `Zuletzt aktualisiert: ${new Date().toLocaleDateString("de-DE")}`;
+    dbTs.textContent = `Aktualisiert: ${new Date().toLocaleDateString("de-DE")}`;
   } catch(e) {
     dbStat.textContent = "❌ Fehler: " + e.message;
   } finally {
@@ -629,7 +818,17 @@ async function updateDB() {
   }
 }
 
-function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════════════
+const enc = s => encodeURIComponent(s);
+const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const debounce = (fn,ms) => { let t; return (...a) => { clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
+function formatDate(iso) {
+  if (!iso) return "";
+  try { return new Date(iso).toLocaleDateString("de-DE",{year:"numeric",month:"short"}); } catch { return ""; }
+}
 
 init();
 </script>
