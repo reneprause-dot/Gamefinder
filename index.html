@@ -13,10 +13,11 @@
   --bg-void:#050508;--bg-deep:#0a0a12;--bg-card:#0f0f1a;--bg-hover:#161625;
   --border:#1e1e35;--border-lit:#2e2e55;
   --cyan:#00f5d4;--purple:#7b2fff;--purple-dim:#5a1fcc;
-  --pink:#f72585;--orange:#ff6b35;--yellow:#ffd60a;
+  --pink:#f72585;--orange:#ff6b35;--yellow:#ffd60a;--green:#06ffa5;
   --text-1:#e8e8ff;--text-2:#9090b0;--text-3:#555575;
   --glow-cyan:0 0 20px rgba(0,245,212,.4),0 0 60px rgba(0,245,212,.1);
   --glow-purple:0 0 20px rgba(123,47,255,.4),0 0 60px rgba(123,47,255,.1);
+  --glow-pink:0 0 20px rgba(247,37,133,.4),0 0 60px rgba(247,37,133,.1);
   --r:12px;--rl:20px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -28,136 +29,145 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 20%,black,transparent)}
 .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 20px 80px}
 
-/* HEADER */
-header{padding:40px 0 0;text-align:center}
-.logo-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:8px}
-.logo-icon{font-size:2.4rem;filter:drop-shadow(0 0 12px var(--cyan));animation:float 3s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.logo-text{font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:900;
+/* NAV */
+.top-nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0 0;flex-wrap:wrap;gap:10px}
+.logo-row{display:flex;align-items:center;gap:12px}
+.logo-icon{font-size:2rem;filter:drop-shadow(0 0 12px var(--cyan));animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.logo-text{font-family:'Orbitron',sans-serif;font-size:clamp(1.4rem,4vw,2.2rem);font-weight:900;
   background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,245,212,.3))}
-.logo-sub{font-size:.9rem;color:var(--text-2);letter-spacing:.2em;text-transform:uppercase;
-  font-family:'JetBrains Mono',monospace;margin-bottom:36px}
+  -webkit-text-fill-color:transparent;background-clip:text}
+.nav-btns{display:flex;gap:8px;flex-wrap:wrap}
+.nav-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg-card);
+  border:1px solid var(--border-lit);border-radius:var(--r);color:var(--text-2);
+  font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;position:relative}
+.nav-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.nav-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,245,212,.05)}
+.nav-badge{position:absolute;top:-5px;right:-5px;background:var(--pink);color:#fff;
+  border-radius:10px;font-size:.65rem;padding:1px 5px;font-family:'JetBrains Mono',monospace;min-width:18px;text-align:center}
+.logo-sub{font-size:.82rem;color:var(--text-2);letter-spacing:.18em;text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;margin-bottom:28px;text-align:center;padding-top:4px}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
 
 /* SEARCH CARD */
 .search-card{background:linear-gradient(135deg,rgba(15,15,26,.95),rgba(10,10,18,.98));
-  border:1px solid var(--border-lit);border-radius:var(--rl);padding:28px 32px;margin-bottom:32px;
+  border:1px solid var(--border-lit);border-radius:var(--rl);padding:26px 28px;margin-bottom:28px;
   position:relative;overflow:hidden}
 .search-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);
-  animation:scan 4s linear infinite}
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);animation:scan 4s linear infinite}
 @keyframes scan{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
-
-/* PLATFORM ROW */
-.plat-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
-@media(max-width:580px){.plat-row{grid-template-columns:1fr}}
-.sel-wrap{display:flex;flex-direction:column;gap:5px}
-.sel-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.plat-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:560px){.plat-row{grid-template-columns:1fr}}
+.sel-wrap{display:flex;flex-direction:column;gap:4px}
+.sel-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-3);font-family:'JetBrains Mono',monospace}
 select{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
-  color:var(--text-1);padding:11px 40px 11px 14px;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;
+  color:var(--text-1);padding:10px 38px 10px 13px;font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;
   cursor:pointer;transition:border-color .2s,box-shadow .2s;appearance:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300f5d4' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 14px center}
+  background-repeat:no-repeat;background-position:right 13px center}
 select:focus{outline:none;border-color:var(--cyan);box-shadow:var(--glow-cyan)}
 select:disabled{opacity:.35;cursor:not-allowed}
 select option{background:#12121f}
 select.pulse{animation:pulseB .6s ease}
 @keyframes pulseB{0%{box-shadow:0 0 0 0 rgba(0,245,212,.5)}50%{box-shadow:0 0 0 8px rgba(0,245,212,0)}100%{box-shadow:0 0 0 0 rgba(0,245,212,0)}}
-
-/* SEARCH INPUT */
-.inp-row{display:flex;gap:10px;position:relative}
+.inp-row{display:flex;gap:8px;position:relative}
 .inp-wrap{position:relative;flex:1}
-.inp-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.45;pointer-events:none}
+.inp-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none}
 #game-input{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
-  color:var(--text-1);padding:13px 14px 13px 42px;font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;
+  color:var(--text-1);padding:12px 13px 12px 40px;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;
   transition:border-color .2s,box-shadow .2s}
 #game-input:focus{outline:none;border-color:var(--cyan);box-shadow:var(--glow-cyan)}
 #game-input::placeholder{color:var(--text-3);font-weight:400}
 #game-input.shake{animation:shake .4s ease}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
 #search-btn{background:linear-gradient(135deg,var(--cyan),var(--purple));border:none;border-radius:var(--r);
-  color:#fff;font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.08em;
-  padding:13px 22px;cursor:pointer;transition:transform .15s,box-shadow .2s;white-space:nowrap}
+  color:#fff;font-family:'Orbitron',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.08em;
+  padding:12px 20px;cursor:pointer;transition:transform .15s,box-shadow .2s;white-space:nowrap}
 #search-btn:hover{transform:translateY(-2px);box-shadow:var(--glow-cyan)}
 
+/* HISTORY BAR */
+#history-bar{display:none;margin-bottom:16px;align-items:center;gap:8px;flex-wrap:wrap}
+#history-bar.show{display:flex}
+.hist-lbl{font-size:.72rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.hist-chip{padding:4px 12px;background:var(--bg-card);border:1px solid var(--border-lit);border-radius:20px;
+  color:var(--text-2);font-size:.78rem;cursor:pointer;transition:all .15s;font-family:'JetBrains Mono',monospace}
+.hist-chip:hover{border-color:var(--cyan);color:var(--cyan)}
+.hist-clear{padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:20px;
+  color:var(--text-3);font-size:.72rem;cursor:pointer;transition:all .15s}
+.hist-clear:hover{border-color:var(--pink);color:var(--pink)}
+
 /* SUGGESTIONS */
-#suggestions{position:absolute;top:calc(100% + 6px);left:0;right:60px;z-index:200;
+#suggestions{position:absolute;top:calc(100% + 5px);left:0;right:70px;z-index:200;
   background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--r);
   overflow:hidden;max-height:0;opacity:0;transition:max-height .3s,opacity .2s;
-  box-shadow:0 20px 60px rgba(0,0,0,.7)}
-#suggestions.open{max-height:460px;opacity:1;overflow-y:auto}
-.sug-item{display:flex;align-items:center;gap:11px;padding:9px 13px;cursor:pointer;
+  box-shadow:0 20px 60px rgba(0,0,0,.75)}
+#suggestions.open{max-height:440px;opacity:1;overflow-y:auto}
+.sug-item{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;
   border-bottom:1px solid var(--border);transition:background .12s}
 .sug-item:last-child{border-bottom:none}
 .sug-item:hover,.sug-item.hi{background:var(--bg-hover)}
-.sug-thumb{width:50px;height:36px;border-radius:6px;background:var(--bg-deep);background-size:cover;
-  background-position:center;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.sug-thumb{width:48px;height:34px;border-radius:5px;background:var(--bg-deep);background-size:cover;
+  background-position:center;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem}
 .sug-info{flex:1;min-width:0}
-.sug-name{display:block;font-weight:600;font-size:.93rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sug-meta{font-size:.72rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.sug-name{display:block;font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sug-meta{font-size:.7rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
 
 /* GAME BANNER */
-#game-banner{display:none;margin-bottom:28px;border-radius:var(--rl);overflow:hidden;
+#game-banner{display:none;margin-bottom:24px;border-radius:var(--rl);overflow:hidden;
   border:1px solid var(--border-lit);animation:fadeUp .4s ease}
 #game-banner.show{display:block}
-.banner-bg{background-size:cover;background-position:center top;background-color:var(--bg-card);min-height:180px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.banner-bg{background-size:cover;background-position:center top;background-color:var(--bg-card)}
 .banner-ov{background:linear-gradient(to right,rgba(5,5,8,.97) 35%,rgba(5,5,8,.4));
-  padding:28px 32px;min-height:180px;display:flex;align-items:center;gap:20px}
-.banner-cover{width:80px;height:110px;border-radius:8px;object-fit:cover;border:2px solid var(--border-lit);flex-shrink:0}
+  padding:24px 28px;min-height:160px;display:flex;align-items:center;gap:18px}
+.banner-cover{width:72px;height:100px;border-radius:7px;object-fit:cover;border:2px solid var(--border-lit);flex-shrink:0}
 .banner-info{flex:1}
-.banner-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.1rem,3vw,1.9rem);font-weight:900;
-  color:var(--cyan);text-shadow:0 0 20px rgba(0,245,212,.35);margin-bottom:10px}
-.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}
+.banner-title-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.banner-title{font-family:'Orbitron',sans-serif;font-size:clamp(1rem,3vw,1.7rem);font-weight:900;
+  color:var(--cyan);text-shadow:0 0 20px rgba(0,245,212,.3);flex:1}
+.fav-game-btn{background:transparent;border:1px solid var(--border-lit);border-radius:8px;
+  padding:6px 10px;font-size:1.1rem;cursor:pointer;transition:all .2s;flex-shrink:0;line-height:1}
+.fav-game-btn:hover{border-color:var(--pink);box-shadow:var(--glow-pink)}
+.fav-game-btn.on{border-color:var(--pink);background:rgba(247,37,133,.1);box-shadow:var(--glow-pink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px}
 .chip{background:rgba(255,255,255,.06);border:1px solid var(--border-lit);border-radius:20px;
-  padding:2px 11px;font-size:.75rem;font-family:'JetBrains Mono',monospace;color:var(--text-2)}
+  padding:2px 10px;font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--text-2)}
 .chip.score{border-color:var(--orange);color:var(--orange)}
 .chip.rat{border-color:var(--yellow);color:var(--yellow)}
-.banner-plats{font-size:.78rem;color:var(--text-3);margin-top:4px}
-.banner-desc{font-size:.85rem;color:var(--text-2);margin-top:8px;line-height:1.5;
+.banner-plats{font-size:.76rem;color:var(--text-3);margin-top:3px}
+.banner-desc{font-size:.82rem;color:var(--text-2);margin-top:6px;line-height:1.45;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-
-/* SCREENSHOTS STRIP */
-.screens-strip{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:rgba(0,0,0,.3);
-  scrollbar-width:thin;scrollbar-color:var(--border-lit) transparent}
-.screen-thumb{width:160px;height:90px;border-radius:8px;object-fit:cover;flex-shrink:0;
+.screens-strip{display:flex;gap:7px;overflow-x:auto;padding:10px 14px;background:rgba(0,0,0,.3);scrollbar-width:thin}
+.screen-thumb{width:150px;height:85px;border-radius:7px;object-fit:cover;flex-shrink:0;
   border:1px solid var(--border);cursor:pointer;transition:transform .2s,border-color .2s}
-.screen-thumb:hover{transform:scale(1.04);border-color:var(--cyan)}
-
-/* LIGHTBOX */
-#lightbox{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.9);
-  align-items:center;justify-content:center;cursor:zoom-out}
-#lightbox.show{display:flex}
-#lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;border:1px solid var(--border-lit)}
+.screen-thumb:hover{transform:scale(1.05);border-color:var(--cyan)}
 
 /* CATEGORY TABS */
-#cat-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
-.cat-btn{display:flex;align-items:center;gap:7px;padding:9px 18px;background:var(--bg-card);
+#cat-tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.cat-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--bg-card);
   border:1px solid var(--border-lit);border-radius:var(--r);color:var(--text-2);
-  font-family:'Rajdhani',sans-serif;font-size:.93rem;font-weight:600;cursor:pointer;transition:all .2s}
+  font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
 .cat-btn:hover{border-color:var(--cc);color:var(--cc)}
-.cat-btn.on{background:rgba(255,255,255,.04);border-color:var(--cc);color:var(--cc);
-  box-shadow:0 0 18px rgba(0,245,212,.12)}
-@media(max-width:600px){.cat-btn span.lbl{display:none}.cat-btn{padding:9px 13px}}
+.cat-btn.on{background:rgba(255,255,255,.04);border-color:var(--cc);color:var(--cc);box-shadow:0 0 16px rgba(0,245,212,.1)}
+@media(max-width:580px){.cat-btn .lbl{display:none}.cat-btn{padding:8px 12px}}
 
-/* RESULTS PANEL */
+/* RESULTS */
 #results{display:none}
 #results.show{display:block}
-
-/* RESULTS BOX */
-.res-box{background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--rl);
-  overflow:hidden;padding:22px}
-.res-hdr{display:flex;align-items:center;gap:10px;font-family:'Orbitron',sans-serif;
-  font-size:.85rem;color:var(--cc);text-transform:uppercase;letter-spacing:.1em;
-  margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.res-box{background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--rl);padding:20px}
+.res-hdr{display:flex;align-items:center;gap:9px;font-family:'Orbitron',sans-serif;
+  font-size:.82rem;color:var(--cc);text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:18px;padding-bottom:13px;border-bottom:1px solid var(--border)}
 .res-hdr em{font-style:normal;color:var(--text-1)}
 
 /* VIDEO GRID */
-.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:13px}
 .vid-card{background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
   overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s;
-  opacity:0;transform:translateY(10px)}
+  opacity:0;transform:translateY(10px);position:relative}
 .vid-card.in{animation:fadeUp .3s ease forwards}
-@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
 .vid-card:hover{transform:translateY(-3px);border-color:var(--cc,var(--cyan))}
 .vid-thumb-wrap{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--bg-void)}
 .vid-thumb{width:100%;height:100%;object-fit:cover;transition:transform .3s}
@@ -165,17 +175,22 @@ select.pulse{animation:pulseB .6s ease}
 .vid-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   background:rgba(0,0,0,.3);opacity:0;transition:opacity .2s}
 .vid-card:hover .vid-play{opacity:1}
-.play-ico{width:48px;height:48px;background:rgba(255,107,53,.9);border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-size:1.2rem}
-.vid-info{padding:11px 13px}
-.vid-title{font-weight:700;font-size:.88rem;line-height:1.35;margin-bottom:5px;
+.play-ico{width:44px;height:44px;background:rgba(255,107,53,.9);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.vid-info{padding:10px 12px;display:flex;gap:8px;align-items:flex-start}
+.vid-text{flex:1}
+.vid-title{font-weight:700;font-size:.85rem;line-height:1.3;margin-bottom:4px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.vid-meta{font-size:.72rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;display:flex;gap:10px}
+.vid-meta{font-size:.7rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;display:flex;gap:8px;flex-wrap:wrap}
 .vid-ch{color:var(--text-2)}
+.fav-btn{background:transparent;border:none;font-size:1.1rem;cursor:pointer;padding:2px;
+  opacity:.4;transition:all .2s;flex-shrink:0;line-height:1}
+.fav-btn:hover{opacity:1;transform:scale(1.2)}
+.fav-btn.on{opacity:1}
 
-/* CHEAT / TIP CARDS */
-.link-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.link-card{display:flex;align-items:center;gap:13px;padding:15px 16px;background:var(--bg-deep);
+/* LINK GRID */
+.link-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:11px}
+.link-card{display:flex;align-items:center;gap:12px;padding:14px 15px;background:var(--bg-deep);
   border:1px solid var(--border-lit);border-radius:var(--r);text-decoration:none;color:var(--text-1);
   position:relative;overflow:hidden;transition:border-color .2s,transform .2s;
   opacity:0;transform:translateY(8px)}
@@ -184,14 +199,14 @@ select.pulse{animation:pulseB .6s ease}
 .link-card:hover .lc-glow{opacity:1}
 .lc-glow{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,245,212,.04),transparent);
   opacity:0;transition:opacity .2s;pointer-events:none}
-.lc-ico{font-size:1.7rem;flex-shrink:0}
+.lc-ico{font-size:1.6rem;flex-shrink:0}
 .lc-info{flex:1;min-width:0}
-.lc-site{font-weight:700;font-size:.95rem;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lc-desc{font-size:.75rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
-.lc-arr{font-size:.85rem;color:var(--cc);opacity:.7;flex-shrink:0}
+.lc-site{font-weight:700;font-size:.9rem;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-desc{font-size:.72rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.lc-arr{font-size:.82rem;color:var(--cc);opacity:.7;flex-shrink:0}
 
-/* RAWG SCREENSHOTS in results */
-.shots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+/* SHOTS GRID */
+.shots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px;margin-bottom:14px}
 .shot-card{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);cursor:pointer;
   aspect-ratio:16/9;opacity:0;transform:scale(.97)}
 .shot-card.in{animation:shotIn .3s ease forwards}
@@ -199,101 +214,311 @@ select.pulse{animation:pulseB .6s ease}
 .shot-card img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
 .shot-card:hover img{transform:scale(1.06)}
 
-/* GOOGLE SEARCH PREVIEW */
-.g-search-wrap{display:flex;flex-direction:column;gap:10px}
-.g-card{background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
-  padding:14px 16px;text-decoration:none;color:var(--text-1);transition:border-color .2s,transform .2s;
-  opacity:0;transform:translateY(8px)}
-.g-card.in{animation:fadeUp .3s ease forwards}
-.g-card:hover{border-color:var(--cyan);transform:translateY(-2px)}
-.g-site{font-size:.72rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;margin-bottom:3px}
-.g-title{font-weight:700;color:var(--cyan);margin-bottom:4px}
-.g-snippet{font-size:.83rem;color:var(--text-2);line-height:1.4}
-
-/* QUICK LINKS BAR */
-.quick-bar{display:flex;align-items:center;gap:8px;padding-top:14px;border-top:1px solid var(--border);
-  font-size:.82rem;color:var(--text-3);flex-wrap:wrap;margin-top:16px}
-.ql{padding:4px 13px;background:var(--bg-hover);border:1px solid var(--border-lit);border-radius:20px;
-  color:var(--text-2);text-decoration:none;font-size:.78rem;font-family:'JetBrains Mono',monospace;transition:all .15s}
+/* QUICK BAR */
+.quick-bar{display:flex;align-items:center;gap:7px;padding-top:13px;border-top:1px solid var(--border);
+  font-size:.8rem;color:var(--text-3);flex-wrap:wrap;margin-top:14px}
+.ql{padding:4px 12px;background:var(--bg-hover);border:1px solid var(--border-lit);border-radius:20px;
+  color:var(--text-2);text-decoration:none;font-size:.76rem;font-family:'JetBrains Mono',monospace;transition:all .15s}
 .ql:hover{border-color:var(--cyan);color:var(--cyan)}
 
+/* SECTION HEADERS */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.sec-title{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:900;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text}
+.sec-sub{font-size:.75rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;margin-top:2px}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap}
+.filter-btn{padding:5px 13px;background:var(--bg-card);border:1px solid var(--border-lit);border-radius:20px;
+  color:var(--text-2);font-size:.78rem;cursor:pointer;transition:all .15s;font-family:'JetBrains Mono',monospace}
+.filter-btn:hover,.filter-btn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,245,212,.06)}
+
+/* GAME CARD GRID (charts / new / favs) */
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.game-card{background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--r);
+  overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s;
+  opacity:0;transform:translateY(10px);position:relative}
+.game-card.in{animation:fadeUp .35s ease forwards}
+.game-card:hover{transform:translateY(-3px);border-color:var(--cyan)}
+.game-card-img{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--bg-deep)}
+.game-card-body{padding:11px 13px}
+.game-card-title{font-weight:700;font-size:.88rem;margin-bottom:5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-card-meta{font-size:.7rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;display:flex;gap:8px;flex-wrap:wrap}
+.game-card-rat{color:var(--yellow)}
+.game-card-fav{position:absolute;top:8px;right:8px;background:rgba(5,5,8,.7);border:none;
+  border-radius:8px;padding:5px 7px;font-size:1rem;cursor:pointer;transition:all .2s;line-height:1}
+.game-card-fav:hover{background:rgba(247,37,133,.2)}
+.game-card-fav.on{background:rgba(247,37,133,.25)}
+.rank-badge{position:absolute;top:8px;left:8px;background:rgba(5,5,8,.8);border:1px solid var(--border-lit);
+  border-radius:6px;padding:2px 8px;font-family:'Orbitron',sans-serif;font-size:.7rem;color:var(--yellow)}
+.new-badge{position:absolute;top:8px;left:8px;background:rgba(6,255,165,.15);border:1px solid var(--green);
+  border-radius:6px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--green)}
+
+/* FAV RESULTS SECTION */
+.fav-results-section{margin-top:20px;padding-top:18px;border-top:1px solid var(--border)}
+.fav-results-title{font-family:'Orbitron',sans-serif;font-size:.75rem;color:var(--pink);
+  text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
+.fav-result-item{display:flex;align-items:center;gap:11px;padding:10px 13px;background:var(--bg-deep);
+  border:1px solid var(--border-lit);border-radius:var(--r);margin-bottom:8px;
+  text-decoration:none;color:var(--text-1);transition:border-color .2s}
+.fav-result-item:hover{border-color:var(--pink)}
+.fav-result-thumb{width:60px;height:34px;border-radius:5px;object-fit:cover;background:var(--bg-card);flex-shrink:0}
+.fav-result-info{flex:1;min-width:0}
+.fav-result-title{font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fav-result-meta{font-size:.7rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.unfav-btn{background:transparent;border:none;font-size:.9rem;cursor:pointer;opacity:.5;transition:opacity .2s;padding:4px}
+.unfav-btn:hover{opacity:1}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-3)}
+.empty-ico{font-size:3rem;margin-bottom:12px;opacity:.4}
+.empty-txt{font-size:.9rem;font-family:'JetBrains Mono',monospace}
+
 /* LOADER */
-.loader{display:flex;flex-direction:column;align-items:center;gap:14px;padding:40px;color:var(--text-3)}
-.spin{width:34px;height:34px;border:3px solid var(--border-lit);border-top-color:var(--cyan);
+.loader{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px;color:var(--text-3)}
+.spin{width:32px;height:32px;border:3px solid var(--border-lit);border-top-color:var(--cyan);
   border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-.loader-txt{font-family:'JetBrains Mono',monospace;font-size:.8rem}
+.loader-txt{font-family:'JetBrains Mono',monospace;font-size:.78rem}
 
 /* DB SECTION */
-.db-sec{margin-top:44px;padding:22px;background:var(--bg-card);border:1px solid var(--border);
-  border-radius:var(--rl);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.db-lbl{font-family:'Orbitron',sans-serif;font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-3);margin-bottom:3px}
-#db-stat{font-size:.92rem;color:var(--text-2);font-weight:600}
-#db-ts{font-size:.74rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;margin-top:2px}
+.db-sec{margin-top:40px;padding:20px;background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--rl);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.db-lbl{font-family:'Orbitron',sans-serif;font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-3);margin-bottom:2px}
+#db-stat{font-size:.88rem;color:var(--text-2);font-weight:600}
+#db-ts{font-size:.71rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;margin-top:2px}
 #upd-btn{background:transparent;border:1px solid var(--purple-dim);border-radius:var(--r);
-  color:var(--purple);font-family:'Rajdhani',sans-serif;font-size:.88rem;font-weight:700;
-  padding:9px 18px;cursor:pointer;transition:all .2s;white-space:nowrap}
+  color:var(--purple);font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:700;
+  padding:8px 16px;cursor:pointer;transition:all .2s;white-space:nowrap}
 #upd-btn:hover{background:rgba(123,47,255,.1);border-color:var(--purple);box-shadow:var(--glow-purple)}
 #upd-btn:disabled{opacity:.35;cursor:not-allowed}
-
-footer{text-align:center;margin-top:56px;padding:22px 0;border-top:1px solid var(--border);
-  color:var(--text-3);font-size:.77rem;font-family:'JetBrains Mono',monospace}
+footer{text-align:center;margin-top:48px;padding:20px 0;border-top:1px solid var(--border);
+  color:var(--text-3);font-size:.74rem;font-family:'JetBrains Mono',monospace}
 footer a{color:var(--cyan);text-decoration:none}
 
+/* NEWS PAGE */
+.news-empty{text-align:center;padding:60px 20px;color:var(--text-3)}
+.news-empty .empty-ico{font-size:3.5rem;margin-bottom:14px;opacity:.35}
+.news-empty .empty-txt{font-family:'JetBrains Mono',monospace;font-size:.85rem;line-height:1.7}
+.news-empty a{color:var(--cyan);text-decoration:none}
+
+.news-toolbar{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.news-ts{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-3)}
+.refresh-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;
+  background:transparent;border:1px solid var(--border-lit);border-radius:var(--r);
+  color:var(--text-2);font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:all .2s}
+.refresh-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.refresh-btn.spinning .ri{animation:sp .7s linear infinite;display:inline-block}
+
+/* News accordion cards */
+.news-card{background:var(--bg-card);border:1px solid var(--border-lit);
+  border-radius:var(--rl);overflow:hidden;margin-bottom:14px;
+  opacity:0;transform:translateY(10px);transition:border-color .2s}
+.news-card.in{animation:fadeUp .35s ease forwards}
+.news-card.has-new{border-color:rgba(0,245,212,.35)}
+.news-card-hdr{display:flex;align-items:center;gap:14px;padding:16px 20px;
+  cursor:pointer;transition:background .15s;user-select:none}
+.news-card-hdr:hover{background:var(--bg-hover)}
+.news-card-cover{width:64px;height:42px;border-radius:7px;object-fit:cover;
+  background:var(--bg-deep);flex-shrink:0;border:1px solid var(--border)}
+.news-card-cover-placeholder{width:64px;height:42px;border-radius:7px;
+  background:var(--bg-deep);flex-shrink:0;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.news-card-meta{flex:1;min-width:0}
+.news-card-title{font-weight:700;font-size:.95rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.news-card-sub{font-size:.72rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;
+  display:flex;gap:10px;flex-wrap:wrap}
+.news-new-badge{background:rgba(0,245,212,.12);border:1px solid var(--cyan);
+  color:var(--cyan);border-radius:20px;padding:1px 8px;font-size:.65rem;
+  font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.news-card-chevron{font-size:.8rem;color:var(--text-3);transition:transform .25s;flex-shrink:0}
+.news-card.open .news-card-chevron{transform:rotate(180deg)}
+
+.news-card-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.news-card.open .news-card-body{max-height:1200px}
+.news-card-inner{padding:0 20px 20px;border-top:1px solid var(--border)}
+
+/* News sections inside card */
+.news-section{margin-top:18px}
+.news-section-title{font-family:'Orbitron',sans-serif;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.news-section-title span{color:var(--cyan)}
+
+/* Screenshots row */
+.news-shots{display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;padding-bottom:4px}
+.news-shot{width:140px;height:79px;border-radius:7px;object-fit:cover;flex-shrink:0;
+  border:1px solid var(--border);cursor:pointer;transition:transform .2s,border-color .2s}
+.news-shot:hover{transform:scale(1.05);border-color:var(--cyan)}
+.news-no-shots{font-size:.8rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;padding:8px 0}
+
+/* DLC / patches list */
+.news-dlc-list{display:flex;flex-direction:column;gap:7px}
+.news-dlc-item{display:flex;align-items:center;gap:10px;padding:9px 12px;
+  background:var(--bg-deep);border:1px solid var(--border);border-radius:var(--r)}
+.news-dlc-img{width:48px;height:30px;border-radius:4px;object-fit:cover;
+  background:var(--bg-void);flex-shrink:0}
+.news-dlc-info{flex:1;min-width:0}
+.news-dlc-name{font-weight:600;font-size:.82rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.news-dlc-meta{font-size:.7rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.news-dlc-tag{font-size:.65rem;padding:1px 7px;border-radius:10px;border:1px solid var(--border-lit);
+  color:var(--text-3);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.news-dlc-tag.dlc{border-color:var(--purple);color:var(--purple)}
+.news-dlc-tag.expansion{border-color:var(--orange);color:var(--orange)}
+.news-dlc-tag.edition{border-color:var(--cyan);color:var(--cyan)}
+.news-no-dlc{font-size:.8rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;padding:6px 0}
+
+/* Google News links */
+.news-glinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.news-glink{display:flex;align-items:center;gap:7px;padding:8px 14px;
+  background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
+  text-decoration:none;color:var(--text-2);font-size:.82rem;transition:all .15s;white-space:nowrap}
+.news-glink:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* LIGHTBOX */
+#lightbox{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.92);
+  align-items:center;justify-content:center;cursor:zoom-out}
+#lightbox.show{display:flex}
+#lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;border:1px solid var(--border-lit)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--r);
+  padding:10px 20px;font-size:.85rem;color:var(--text-1);z-index:998;
+  transition:transform .3s ease;pointer-events:none;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
 @media(max-width:768px){
-  .search-card{padding:18px 16px}
-  .vid-grid{grid-template-columns:1fr}
+  .search-card{padding:16px 14px}
+  .vid-grid,.game-grid{grid-template-columns:1fr 1fr}
   .banner-cover{display:none}
   .db-sec{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:480px){
+  .vid-grid,.game-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<header>
-  <div class="logo-row">
-    <span class="logo-icon">🎮</span>
-    <h1 class="logo-text">GAMEFINDER</h1>
+<!-- TOP NAV -->
+<div class="top-nav">
+  <div>
+    <div class="logo-row">
+      <span class="logo-icon">🎮</span>
+      <span class="logo-text">GAMEFINDER</span>
+    </div>
+    <div class="logo-sub">Tipps · Cheats · Videos · Walkthroughs · Downloads</div>
   </div>
-  <p class="logo-sub">Tipps · Cheats · Videos · Walkthroughs · Downloads</p>
-</header>
+  <div class="nav-btns">
+    <button class="nav-btn active" data-page="search" onclick="showPage('search',this)">🔍 <span>Suche</span></button>
+    <button class="nav-btn" data-page="new" onclick="showPage('new',this)">🆕 <span>Neu</span></button>
+    <button class="nav-btn" data-page="charts" onclick="showPage('charts',this)">🏆 <span>Charts</span></button>
+    <button class="nav-btn" data-page="news" onclick="showPage('news',this)">📰 <span>News</span>
+      <span class="nav-badge" id="news-badge" style="display:none">●</span>
+    </button>
+    <button class="nav-btn" data-page="favs" onclick="showPage('favs',this)">❤️ <span>Favoriten</span>
+      <span class="nav-badge" id="fav-badge" style="display:none">0</span>
+    </button>
+  </div>
+</div>
 
-<section class="search-card">
-  <div class="plat-row">
-    <div class="sel-wrap">
-      <label class="sel-label" for="mfg">Hersteller</label>
-      <select id="mfg"><option value="">— Hersteller wählen —</option></select>
-    </div>
-    <div class="sel-wrap">
-      <label class="sel-label" for="plat">Plattform</label>
-      <select id="plat" disabled><option value="">— erst Hersteller wählen —</option></select>
-    </div>
-  </div>
-  <div style="position:relative">
-    <div class="inp-row">
-      <div class="inp-wrap">
-        <span class="inp-icon">🕹️</span>
-        <input id="game-input" type="text" placeholder="Spieltitel eingeben…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+<!-- ═══════════════════ PAGE: SEARCH ═══════════════════ -->
+<div class="page active" id="page-search">
+  <section class="search-card">
+    <div class="plat-row">
+      <div class="sel-wrap">
+        <label class="sel-label" for="mfg">Hersteller</label>
+        <select id="mfg"><option value="">— Hersteller wählen —</option></select>
       </div>
-      <button id="search-btn">SUCHEN</button>
+      <div class="sel-wrap">
+        <label class="sel-label" for="plat">Plattform</label>
+        <select id="plat" disabled><option value="">— erst Hersteller wählen —</option></select>
+      </div>
     </div>
-    <div id="suggestions"></div>
+    <div style="position:relative">
+      <div class="inp-row">
+        <div class="inp-wrap">
+          <span class="inp-icon">🕹️</span>
+          <input id="game-input" type="text" placeholder="Spieltitel eingeben…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+        </div>
+        <button id="search-btn">SUCHEN</button>
+      </div>
+      <div id="suggestions"></div>
+    </div>
+  </section>
+  <div id="history-bar">
+    <span class="hist-lbl">🕓 Zuletzt:</span>
+    <div id="hist-chips"></div>
+    <button class="hist-clear" onclick="clearHistory()">✕ Löschen</button>
   </div>
-</section>
+  <div id="game-banner"></div>
+  <section id="results">
+    <div id="cat-tabs"></div>
+    <div class="res-box"><div id="res-content"></div></div>
+  </section>
+  <!-- Saved result favs for current game -->
+  <div id="saved-results-panel"></div>
+</div>
 
-<!-- Game Banner -->
-<div id="game-banner"></div>
-
-<!-- Results -->
-<section id="results">
-  <div id="cat-tabs"></div>
-  <div class="res-box">
-    <div id="res-content"></div>
+<!-- ═══════════════════ PAGE: NEW RELEASES ═══════════════════ -->
+<div class="page" id="page-new">
+  <div class="sec-hdr">
+    <div>
+      <div class="sec-title">🆕 Neuerscheinungen</div>
+      <div class="sec-sub">Neue Spiele der letzten 60 Tage</div>
+    </div>
+    <div class="filter-row" id="new-filters">
+      <button class="filter-btn on" data-plat="" onclick="filterNew(this,'')">Alle</button>
+      <button class="filter-btn" data-plat="4" onclick="filterNew(this,'4')">PC</button>
+      <button class="filter-btn" data-plat="187" onclick="filterNew(this,'187')">PS5</button>
+      <button class="filter-btn" data-plat="186" onclick="filterNew(this,'186')">Xbox Series</button>
+      <button class="filter-btn" data-plat="7" onclick="filterNew(this,'7')">Switch</button>
+    </div>
   </div>
-</section>
+  <div class="game-grid" id="new-grid"><div class="loader"><div class="spin"></div><div class="loader-txt">Lade Neuerscheinungen…</div></div></div>
+</div>
 
-<!-- DB -->
+<!-- ═══════════════════ PAGE: CHARTS ═══════════════════ -->
+<div class="page" id="page-charts">
+  <div class="sec-hdr">
+    <div>
+      <div class="sec-title">🏆 Top Charts</div>
+      <div class="sec-sub">Bestbewertete Spiele aller Zeiten</div>
+    </div>
+    <div class="filter-row" id="chart-filters">
+      <button class="filter-btn on" data-plat="" onclick="filterCharts(this,'')">Alle</button>
+      <button class="filter-btn" data-plat="4" onclick="filterCharts(this,'4')">PC</button>
+      <button class="filter-btn" data-plat="18,187" onclick="filterCharts(this,'18,187')">PlayStation</button>
+      <button class="filter-btn" data-plat="1,186" onclick="filterCharts(this,'1,186')">Xbox</button>
+      <button class="filter-btn" data-plat="7" onclick="filterCharts(this,'7')">Switch</button>
+    </div>
+  </div>
+  <div class="game-grid" id="chart-grid"><div class="loader"><div class="spin"></div><div class="loader-txt">Lade Charts…</div></div></div>
+</div>
+
+<!-- ═══════════════════ PAGE: FAVOURITES ═══════════════════ -->
+<div class="page" id="page-favs">
+  <div class="sec-hdr">
+    <div>
+      <div class="sec-title">❤️ Meine Favoriten</div>
+      <div class="sec-sub">Gespeicherte Spiele & Inhalte</div>
+    </div>
+    <button class="filter-btn" onclick="clearAllFavs()" style="border-color:var(--pink);color:var(--pink)">🗑️ Alle löschen</button>
+  </div>
+  <!-- Fav Games -->
+  <div style="margin-bottom:10px;font-family:'Orbitron',sans-serif;font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.12em">🎮 Spiele</div>
+  <div class="game-grid" id="fav-games-grid"></div>
+  <!-- Fav Results -->
+  <div style="margin:28px 0 10px;font-family:'Orbitron',sans-serif;font-size:.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.12em">📌 Gespeicherte Inhalte</div>
+  <div id="fav-results-list"></div>
+</div>
+
+<!-- DB + Footer -->
 <section class="db-sec">
   <div>
     <div class="db-lbl">💾 Lokale Spieldatenbank</div>
@@ -303,27 +528,28 @@ footer a{color:var(--cyan);text-decoration:none}
   <button id="upd-btn">🔄 Datenbank aktualisieren</button>
 </section>
 
-<!-- Lightbox -->
-<div id="lightbox"><img id="lb-img" src="" alt=""/></div>
-
 <footer>GameFinder &copy; 2025 · <a href="https://rawg.io" target="_blank">RAWG.io</a> · <a href="https://developers.google.com/youtube" target="_blank">YouTube API</a></footer>
 </div>
 
+<!-- Lightbox & Toast -->
+<div id="lightbox"><img id="lb-img" src="" alt=""/></div>
+<div id="toast"></div>
+
 <script>
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // CONFIG
-// ═══════════════════════════════════════════════════════════════════════════
-const CFG = {
-  rawgKey:    "d3f21eea74f841e287ec5890b83da8d5",
-  ytKey:      "AIzaSyAXlrYVq0IYiN18GvUq-6BeK4Z_mgCiAIg",
-  rawg:       "https://api.rawg.io/api",
-  yt:         "https://www.googleapis.com/youtube/v3"
+// ═══════════════════════════════════════════════════════
+const CFG={
+  rawgKey:"d3f21eea74f841e287ec5890b83da8d5",
+  ytKey:"AIzaSyAXlrYVq0IYiN18GvUq-6BeK4Z_mgCiAIg",
+  rawg:"https://api.rawg.io/api",
+  yt:"https://www.googleapis.com/youtube/v3"
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// PLATFORM DATA
-// ═══════════════════════════════════════════════════════════════════════════
-const PLATFORMS = {
+// ═══════════════════════════════════════════════════════
+// PLATFORMS
+// ═══════════════════════════════════════════════════════
+const PLATFORMS={
   PC:{label:"PC",icon:"🖥️",platforms:[{id:4,name:"PC (Windows)"},{id:5,name:"macOS"},{id:6,name:"Linux"}]},
   Sony:{label:"Sony",icon:"🎮",platforms:[
     {id:27,name:"PlayStation 1"},{id:15,name:"PlayStation 2"},{id:16,name:"PlayStation 3"},
@@ -333,114 +559,157 @@ const PLATFORMS = {
     {id:10,name:"Wii"},{id:11,name:"Wii U"},{id:7,name:"Nintendo Switch"},
     {id:24,name:"Game Boy"},{id:43,name:"Game Boy Advance"},{id:77,name:"Nintendo DS"},{id:137,name:"Nintendo 3DS"}]},
   Microsoft:{label:"Microsoft",icon:"🎯",platforms:[
-    {id:80,name:"Xbox (Original)"},{id:14,name:"Xbox 360"},{id:1,name:"Xbox One"},{id:186,name:"Xbox Series X/S"}]},
+    {id:80,name:"Xbox"},{id:14,name:"Xbox 360"},{id:1,name:"Xbox One"},{id:186,name:"Xbox Series X/S"}]},
   Sega:{label:"Sega",icon:"⚡",platforms:[
-    {id:167,name:"Sega Master System"},{id:107,name:"Mega Drive / Genesis"},{id:119,name:"Sega 32X"},
-    {id:117,name:"Sega CD"},{id:74,name:"Sega Saturn"},{id:106,name:"Dreamcast"},{id:111,name:"Game Gear"}]},
+    {id:167,name:"Master System"},{id:107,name:"Mega Drive"},{id:119,name:"Sega 32X"},
+    {id:117,name:"Sega CD"},{id:74,name:"Saturn"},{id:106,name:"Dreamcast"},{id:111,name:"Game Gear"}]},
   Atari:{label:"Atari",icon:"👾",platforms:[
     {id:28,name:"Atari 2600"},{id:31,name:"Atari 5200"},{id:23,name:"Atari 7800"},
     {id:25,name:"Atari Lynx"},{id:22,name:"Atari Jaguar"}]},
   Mobile:{label:"Mobile",icon:"📱",platforms:[{id:21,name:"Android"},{id:3,name:"iOS"}]}
 };
 
-const CATS = [
-  {id:"videos",     label:"Videos",           icon:"📹", color:"#ff6b35"},
-  {id:"walkthroughs",label:"Walkthroughs",     icon:"🗺️", color:"#06ffa5"},
-  {id:"tips",       label:"Tipps & Tricks",    icon:"💡", color:"#00f5d4"},
-  {id:"cheats",     label:"Cheats & Codes",    icon:"🔓", color:"#f72585"},
-  {id:"screenshots",label:"Screenshots",       icon:"🖼️", color:"#4cc9f0"},
-  {id:"blogs",      label:"Blogs & Reviews",   icon:"📝", color:"#7b2fff"},
-  {id:"downloads",  label:"Downloads & Mods",  icon:"📥", color:"#ffd60a"}
+const CATS=[
+  {id:"videos",label:"Videos",icon:"📹",color:"#ff6b35"},
+  {id:"walkthroughs",label:"Walkthroughs",icon:"🗺️",color:"#06ffa5"},
+  {id:"tips",label:"Tipps & Tricks",icon:"💡",color:"#00f5d4"},
+  {id:"cheats",label:"Cheats & Codes",icon:"🔓",color:"#f72585"},
+  {id:"screenshots",label:"Screenshots",icon:"🖼️",color:"#4cc9f0"},
+  {id:"blogs",label:"Blogs & Reviews",icon:"📝",color:"#7b2fff"},
+  {id:"downloads",label:"Downloads & Mods",icon:"📥",color:"#ffd60a"}
 ];
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // STATE
-// ═══════════════════════════════════════════════════════════════════════════
-let S = {
-  mfg:null, plat:null, game:null, gameSlug:null,
-  gameData:null, sugs:[], activeCat:null,
-  dbGames:[], dbTs:null
+// ═══════════════════════════════════════════════════════
+let S={
+  mfg:null,plat:null,game:null,gameSlug:null,gameData:null,
+  sugs:[],activeCat:null,dbGames:[],dbTs:null,
+  newPlatFilter:"",chartPlatFilter:""
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// DOM
-// ═══════════════════════════════════════════════════════════════════════════
-const $  = id => document.getElementById(id);
-const mfgEl   = $("mfg"), platEl  = $("plat");
-const gameInp = $("game-input"), sugBox = $("suggestions");
-const searchBt= $("search-btn"), banner = $("game-banner");
-const results = $("results"),   catTabs = $("cat-tabs");
-const resCtnt = $("res-content");
-const dbStat  = $("db-stat"),   dbTs   = $("db-ts"), updBtn = $("upd-btn");
-const lightbox= $("lightbox"),  lbImg  = $("lb-img");
+// Storage keys
+const SK={
+  favGames:"gf_fav_games",
+  favResults:"gf_fav_results",
+  history:"gf_history",
+  db:"gf_games",
+  dbTs:"gf_ts"
+};
 
-// ═══════════════════════════════════════════════════════════════════════════
+function loadStore(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}}
+function saveStore(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
+let FAV_GAMES   = loadStore(SK.favGames,[]);
+let FAV_RESULTS = loadStore(SK.favResults,[]);
+let HISTORY     = loadStore(SK.history,[]);
+
+// ═══════════════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════════════════════════════
-function init() {
+// ═══════════════════════════════════════════════════════
+function init(){
   // Manufacturers
-  Object.entries(PLATFORMS).forEach(([k,v]) => {
-    const o = document.createElement("option");
-    o.value = k; o.textContent = `${v.icon} ${v.label}`;
-    mfgEl.appendChild(o);
+  const mfgEl=document.getElementById("mfg");
+  Object.entries(PLATFORMS).forEach(([k,v])=>{
+    const o=document.createElement("option");
+    o.value=k;o.textContent=`${v.icon} ${v.label}`;mfgEl.appendChild(o);
   });
-
-  mfgEl.addEventListener("change", () => {
-    S.mfg = mfgEl.value; S.plat = null;
-    platEl.innerHTML = '<option value="">— Plattform wählen —</option>';
-    platEl.disabled = !S.mfg;
-    if (S.mfg) {
-      PLATFORMS[S.mfg].platforms.forEach(p => {
-        const o = document.createElement("option");
-        o.value = p.id; o.dataset.name = p.name; o.textContent = p.name;
-        platEl.appendChild(o);
+  mfgEl.addEventListener("change",()=>{
+    S.mfg=mfgEl.value;S.plat=null;
+    const pe=document.getElementById("plat");
+    pe.innerHTML='<option value="">— Plattform wählen —</option>';
+    pe.disabled=!S.mfg;
+    if(S.mfg){
+      PLATFORMS[S.mfg].platforms.forEach(p=>{
+        const o=document.createElement("option");
+        o.value=p.id;o.dataset.name=p.name;o.textContent=p.name;pe.appendChild(o);
       });
-      platEl.classList.add("pulse");
-      setTimeout(()=>platEl.classList.remove("pulse"),600);
+      pe.classList.add("pulse");setTimeout(()=>pe.classList.remove("pulse"),600);
     }
   });
-
-  platEl.addEventListener("change", () => {
-    const o = platEl.selectedOptions[0];
-    S.plat = o && o.value ? {id:o.value, name:o.dataset.name} : null;
+  document.getElementById("plat").addEventListener("change",()=>{
+    const o=document.getElementById("plat").selectedOptions[0];
+    S.plat=o&&o.value?{id:o.value,name:o.dataset.name}:null;
   });
-
-  gameInp.addEventListener("input", debounce(onInput, 280));
-  gameInp.addEventListener("keydown", e => {
-    if (e.key==="Enter")     { hideSug(); doSearch(); }
-    if (e.key==="Escape")    hideSug();
-    if (e.key==="ArrowDown") navSug(1);
-    if (e.key==="ArrowUp")   navSug(-1);
+  const gi=document.getElementById("game-input");
+  gi.addEventListener("input",debounce(onInput,280));
+  gi.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){hideSug();doSearch();}
+    if(e.key==="Escape")hideSug();
+    if(e.key==="ArrowDown")navSug(1);
+    if(e.key==="ArrowUp")navSug(-1);
   });
-  document.addEventListener("click", e => { if (!e.target.closest("[style*='position:relative']") && !e.target.closest(".inp-row")) hideSug(); });
-  searchBt.addEventListener("click", doSearch);
-  updBtn.addEventListener("click", updateDB);
-  lightbox.addEventListener("click", () => lightbox.classList.remove("show"));
+  document.addEventListener("click",e=>{
+    if(!e.target.closest("[style*='position:relative']")&&!e.target.closest(".inp-row"))hideSug();
+  });
+  document.getElementById("search-btn").addEventListener("click",doSearch);
+  document.getElementById("upd-btn").addEventListener("click",updateDB);
+  document.getElementById("lightbox").addEventListener("click",()=>document.getElementById("lightbox").classList.remove("show"));
+
   loadDB();
+  renderHistory();
+  updateFavBadge();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// PAGE NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showPage(id,btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("page-"+id).classList.add("active");
+  if(btn)btn.classList.add("active");
+  if(id==="new"&&!document.getElementById("new-grid").querySelector(".game-card"))loadNew("");
+  if(id==="charts"&&!document.getElementById("chart-grid").querySelector(".game-card"))loadCharts("");
+  if(id==="favs")renderFavsPage();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+// ═══════════════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════════════
+function addHistory(name){
+  HISTORY=HISTORY.filter(h=>h!==name);
+  HISTORY.unshift(name);
+  if(HISTORY.length>10)HISTORY=HISTORY.slice(0,10);
+  saveStore(SK.history,HISTORY);
+  renderHistory();
+}
+function clearHistory(){HISTORY=[];saveStore(SK.history,[]);renderHistory();}
+function renderHistory(){
+  const bar=document.getElementById("history-bar");
+  const chips=document.getElementById("hist-chips");
+  if(!HISTORY.length){bar.classList.remove("show");return;}
+  bar.classList.add("show");
+  chips.innerHTML=HISTORY.map(h=>`<span class="hist-chip" onclick="histSearch('${esc(h)}')">${esc(h)}</span>`).join("");
+}
+function histSearch(name){
+  document.getElementById("game-input").value=name;
+  S.game=name;S.gameSlug=null;S.gameData=null;
+  loadGameBanner(name);doSearch();
+}
+
+// ═══════════════════════════════════════════════════════
 // AUTOCOMPLETE
-// ═══════════════════════════════════════════════════════════════════════════
-async function onInput() {
-  const q = gameInp.value.trim();
-  if (q.length < 2) { hideSug(); return; }
-  const local = S.dbGames.filter(g => g.name.toLowerCase().includes(q.toLowerCase())).slice(0,4);
-  try {
-    const pp = S.plat ? `&platforms=${S.plat.id}` : "";
-    const r = await fetch(`${CFG.rawg}/games?search=${enc(q)}${pp}&page_size=8&key=${CFG.rawgKey}`);
-    const d = await r.json();
-    const seen = new Set(); const merged = [];
-    [...local, ...(d.results||[]).map(g=>({name:g.name,slug:g.slug,released:g.released,bg:g.background_image,rating:g.rating}))]
-      .forEach(g => { if (!seen.has(g.name)) { seen.add(g.name); merged.push(g); } });
-    S.sugs = merged.slice(0,8);
-    renderSug();
-  } catch { if (local.length) { S.sugs = local; renderSug(); } }
+// ═══════════════════════════════════════════════════════
+async function onInput(){
+  const q=document.getElementById("game-input").value.trim();
+  if(q.length<2){hideSug();return;}
+  const local=S.dbGames.filter(g=>g.name.toLowerCase().includes(q.toLowerCase())).slice(0,4);
+  try{
+    const pp=S.plat?`&platforms=${S.plat.id}`:"";
+    const r=await fetch(`${CFG.rawg}/games?search=${enc(q)}${pp}&page_size=8&key=${CFG.rawgKey}`);
+    const d=await r.json();
+    const seen=new Set();const merged=[];
+    [...local,...(d.results||[]).map(g=>({name:g.name,slug:g.slug,released:g.released,bg:g.background_image,rating:g.rating}))]
+      .forEach(g=>{if(!seen.has(g.name)){seen.add(g.name);merged.push(g);}});
+    S.sugs=merged.slice(0,8);renderSug();
+  }catch{if(local.length){S.sugs=local;renderSug();}}
 }
-
-function renderSug() {
-  if (!S.sugs.length) { hideSug(); return; }
-  sugBox.innerHTML = S.sugs.map((g,i)=>`
+function renderSug(){
+  const box=document.getElementById("suggestions");
+  if(!S.sugs.length){hideSug();return;}
+  box.innerHTML=S.sugs.map((g,i)=>`
     <div class="sug-item" data-i="${i}">
       <div class="sug-thumb" style="background-image:url('${g.bg||""}')">
         ${!g.bg?"🎮":""}
@@ -450,52 +719,58 @@ function renderSug() {
         <span class="sug-meta">${g.released?g.released.slice(0,4):""}${g.rating?` · ⭐${g.rating.toFixed(1)}`:""}</span>
       </div>
     </div>`).join("");
-  sugBox.querySelectorAll(".sug-item").forEach((el,i)=>{
+  box.querySelectorAll(".sug-item").forEach((el,i)=>{
     el.addEventListener("click",()=>selectGame(S.sugs[i]));
-    el.addEventListener("mouseenter",()=>{ sugBox.querySelectorAll(".sug-item").forEach(x=>x.classList.remove("hi")); el.classList.add("hi"); });
+    el.addEventListener("mouseenter",()=>{box.querySelectorAll(".sug-item").forEach(x=>x.classList.remove("hi"));el.classList.add("hi");});
   });
-  sugBox.classList.add("open");
+  box.classList.add("open");
 }
-
-function hideSug() { sugBox.classList.remove("open"); }
-
-function selectGame(g) {
-  S.game = g.name; S.gameSlug = g.slug||null;
-  gameInp.value = g.name; hideSug();
-  loadGameBanner(g.slug||g.name, g);
+function hideSug(){document.getElementById("suggestions").classList.remove("open");}
+function selectGame(g){
+  S.game=g.name;S.gameSlug=g.slug||null;
+  document.getElementById("game-input").value=g.name;
+  hideSug();loadGameBanner(g.slug||g.name,g);
 }
-
-function navSug(d) {
-  const items = [...sugBox.querySelectorAll(".sug-item")];
-  if (!items.length) return;
-  const cur = sugBox.querySelector(".sug-item.hi");
-  let idx = cur ? items.indexOf(cur)+d : (d===1?0:items.length-1);
-  idx = (idx+items.length)%items.length;
-  items.forEach(x=>x.classList.remove("hi")); items[idx].classList.add("hi");
+function navSug(d){
+  const box=document.getElementById("suggestions");
+  const items=[...box.querySelectorAll(".sug-item")];
+  if(!items.length)return;
+  const cur=box.querySelector(".sug-item.hi");
+  let idx=cur?items.indexOf(cur)+d:(d===1?0:items.length-1);
+  idx=(idx+items.length)%items.length;
+  items.forEach(x=>x.classList.remove("hi"));items[idx].classList.add("hi");
   items[idx].scrollIntoView({block:"nearest"});
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // GAME BANNER
-// ═══════════════════════════════════════════════════════════════════════════
-async function loadGameBanner(slugOrName, hint) {
-  banner.innerHTML = `<div class="banner-bg"><div class="banner-ov"><div class="spin" style="margin:0"></div></div></div>`;
-  banner.classList.add("show");
-  try {
-    const r = await fetch(`${CFG.rawg}/games/${slugOrName}?key=${CFG.rawgKey}`);
-    if (!r.ok) throw new Error();
-    const g = await r.json();
-    S.gameData = g; S.gameSlug = g.slug;
-    const plats = (g.platforms||[]).map(p=>p.platform.name).slice(0,5).join(", ");
-    const genres = (g.genres||[]).map(x=>x.name).join(", ");
-    const devs   = (g.developers||[]).map(x=>x.name).join(", ");
-    const shots  = (g.short_screenshots||[]).slice(1,6);
-    banner.innerHTML = `
+// ═══════════════════════════════════════════════════════
+async function loadGameBanner(slugOrName){
+  const b=document.getElementById("game-banner");
+  b.innerHTML=`<div class="banner-bg"><div class="banner-ov"><div class="spin" style="margin:0"></div></div></div>`;
+  b.classList.add("show");
+  try{
+    const r=await fetch(`${CFG.rawg}/games/${slugOrName}?key=${CFG.rawgKey}`);
+    if(!r.ok)throw new Error();
+    const g=await r.json();
+    S.gameData=g;S.gameSlug=g.slug;
+    const isFav=FAV_GAMES.some(f=>f.slug===g.slug);
+    const plats=(g.platforms||[]).map(p=>p.platform.name).slice(0,5).join(", ");
+    const genres=(g.genres||[]).map(x=>x.name).join(", ");
+    const devs=(g.developers||[]).map(x=>x.name).join(", ");
+    const shots=(g.short_screenshots||[]).slice(1,6);
+    b.innerHTML=`
       <div class="banner-bg" style="background-image:url('${g.background_image||""}')">
         <div class="banner-ov">
-          ${g.background_image_additional?`<img class="banner-cover" src="${g.background_image_additional}" alt="${esc(g.name)}"/>`:``}
+          ${g.background_image_additional?`<img class="banner-cover" src="${g.background_image_additional}" alt=""/>`:""}
           <div class="banner-info">
-            <div class="banner-title">${esc(g.name)}</div>
+            <div class="banner-title-row">
+              <div class="banner-title">${esc(g.name)}</div>
+              <button class="fav-game-btn${isFav?" on":""}" id="fav-game-btn" onclick="toggleFavGame()"
+                title="${isFav?"Von Favoriten entfernen":"Zu Favoriten hinzufügen"}">
+                ${isFav?"❤️":"🤍"}
+              </button>
+            </div>
             <div class="chips">
               ${g.released?`<span class="chip">📅 ${g.released}</span>`:""}
               ${g.rating?`<span class="chip rat">⭐ ${g.rating.toFixed(1)}/5</span>`:""}
@@ -504,330 +779,521 @@ async function loadGameBanner(slugOrName, hint) {
               ${devs?`<span class="chip">🏢 ${devs}</span>`:""}
             </div>
             ${plats?`<div class="banner-plats">🖥️ ${plats}</div>`:""}
-            ${g.description_raw?`<div class="banner-desc">${esc(g.description_raw.slice(0,200))}…</div>`:""}
+            ${g.description_raw?`<div class="banner-desc">${esc(g.description_raw.slice(0,220))}…</div>`:""}
           </div>
         </div>
       </div>
-      ${shots.length?`
-      <div class="screens-strip">
-        ${shots.map(s=>`<img class="screen-thumb" src="${s.image}" alt="screenshot" loading="lazy" onclick="openLB('${s.image}')">`).join("")}
-      </div>`:""}`;
-  } catch {
-    banner.innerHTML = `<div class="banner-bg"><div class="banner-ov"><div class="banner-info"><div class="banner-title">${esc(slugOrName)}</div></div></div></div>`;
+      ${shots.length?`<div class="screens-strip">${shots.map(s=>`<img class="screen-thumb" src="${s.image}" loading="lazy" onclick="openLB('${s.image}')">`).join("")}</div>`:""}`;
+  }catch{
+    b.innerHTML=`<div class="banner-bg"><div class="banner-ov"><div class="banner-info"><div class="banner-title">${esc(slugOrName)}</div></div></div></div>`;
   }
 }
 
-function openLB(src) { lbImg.src = src; lightbox.classList.add("show"); }
-
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // SEARCH
-// ═══════════════════════════════════════════════════════════════════════════
-function doSearch() {
-  const name = gameInp.value.trim();
-  if (!name) { gameInp.classList.add("shake"); setTimeout(()=>gameInp.classList.remove("shake"),400); return; }
-  S.game = name;
-  if (!S.gameSlug) loadGameBanner(name);
-
-  // Build tabs
-  catTabs.innerHTML = CATS.map(c=>`
+// ═══════════════════════════════════════════════════════
+function doSearch(){
+  const name=document.getElementById("game-input").value.trim();
+  if(!name){
+    const gi=document.getElementById("game-input");
+    gi.classList.add("shake");setTimeout(()=>gi.classList.remove("shake"),400);return;
+  }
+  S.game=name;
+  if(!S.gameSlug)loadGameBanner(name);
+  addHistory(name);
+  const ct=document.getElementById("cat-tabs");
+  ct.innerHTML=CATS.map(c=>`
     <button class="cat-btn" data-cat="${c.id}" style="--cc:${c.color}">
       <span>${c.icon}</span><span class="lbl">${c.label}</span>
     </button>`).join("");
-  catTabs.querySelectorAll(".cat-btn").forEach(b=>b.addEventListener("click",()=>openCat(b.dataset.cat)));
-  results.classList.add("show");
-  results.scrollIntoView({behavior:"smooth",block:"start"});
+  ct.querySelectorAll(".cat-btn").forEach(b=>b.addEventListener("click",()=>openCat(b.dataset.cat)));
+  document.getElementById("results").classList.add("show");
+  document.getElementById("results").scrollIntoView({behavior:"smooth",block:"start"});
   openCat("videos");
+  renderSavedResultsPanel();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // CATEGORY ROUTER
-// ═══════════════════════════════════════════════════════════════════════════
-function openCat(id) {
-  S.activeCat = id;
-  catTabs.querySelectorAll(".cat-btn").forEach(b=>b.classList.toggle("on",b.dataset.cat===id));
-  const cat = CATS.find(c=>c.id===id);
-  document.documentElement.style.setProperty("--cc", cat.color);
-  resCtnt.innerHTML = `<div class="loader"><div class="spin"></div><div class="loader-txt">Lade ${cat.label}…</div></div>`;
-  switch(id) {
-    case "videos":      loadYT("gameplay");        break;
-    case "walkthroughs":loadYT("walkthrough komplettlösung"); break;
-    case "tips":        loadTips();                break;
-    case "cheats":      loadCheats();              break;
-    case "screenshots": loadScreenshots();         break;
-    case "blogs":       loadBlogs();               break;
-    case "downloads":   loadDownloads();           break;
+// ═══════════════════════════════════════════════════════
+function openCat(id){
+  S.activeCat=id;
+  document.querySelectorAll(".cat-btn").forEach(b=>b.classList.toggle("on",b.dataset.cat===id));
+  const cat=CATS.find(c=>c.id===id);
+  document.documentElement.style.setProperty("--cc",cat.color);
+  document.getElementById("res-content").innerHTML=`<div class="loader"><div class="spin"></div><div class="loader-txt">Lade ${cat.label}…</div></div>`;
+  switch(id){
+    case "videos":        loadYT("gameplay");break;
+    case "walkthroughs":  loadYT("walkthrough komplettlösung");break;
+    case "tips":          loadTips();break;
+    case "cheats":        loadCheats();break;
+    case "screenshots":   loadScreenshots();break;
+    case "blogs":         loadBlogs();break;
+    case "downloads":     loadDownloads();break;
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // YOUTUBE
-// ═══════════════════════════════════════════════════════════════════════════
-async function loadYT(suffix) {
-  const cat = CATS.find(c=>c.id===S.activeCat);
-  const platStr = S.plat?.name || "";
-  const q = `${S.game}${platStr?" "+platStr:""} ${suffix}`;
-  try {
-    const r = await fetch(`${CFG.yt}/search?part=snippet&q=${enc(q)}&type=video&maxResults=12&relevanceLanguage=de&key=${CFG.ytKey}`);
-    const d = await r.json();
-    if (!d.items?.length) throw new Error("keine Ergebnisse");
-    const html = `
+// ═══════════════════════════════════════════════════════
+async function loadYT(suffix){
+  const cat=CATS.find(c=>c.id===S.activeCat);
+  const platStr=S.plat?.name||"";
+  const q=`${S.game}${platStr?" "+platStr:""} ${suffix}`;
+  try{
+    const r=await fetch(`${CFG.yt}/search?part=snippet&q=${enc(q)}&type=video&maxResults=12&relevanceLanguage=de&key=${CFG.ytKey}`);
+    const d=await r.json();
+    if(!d.items?.length)throw new Error();
+    const rc=document.getElementById("res-content");
+    rc.innerHTML=`
       <div class="res-hdr" style="--cc:${cat.color}">
         <span>${cat.icon}</span>
         <span>${cat.label} für <em>${esc(S.game)}</em>${platStr?` · <em>${platStr}</em>`:""}</span>
       </div>
       <div class="vid-grid">
         ${d.items.map((v,i)=>{
-          const id  = v.id.videoId;
-          const sn  = v.snippet;
-          const thumb = sn.thumbnails.medium?.url || sn.thumbnails.default?.url;
-          const views = "";
+          const vid=v.id.videoId;const sn=v.snippet;
+          const thumb=sn.thumbnails.medium?.url||sn.thumbnails.default?.url||"";
+          const isFav=FAV_RESULTS.some(f=>f.id===vid);
           return `
-          <div class="vid-card" style="animation-delay:${i*60}ms;--cc:${cat.color}" onclick="window.open('https://www.youtube.com/watch?v=${id}','_blank')">
-            <div class="vid-thumb-wrap">
-              <img class="vid-thumb" src="${thumb}" alt="${esc(sn.title)}" loading="lazy"/>
+          <div class="vid-card" style="animation-delay:${i*55}ms;--cc:${cat.color}">
+            <div class="vid-thumb-wrap" onclick="window.open('https://www.youtube.com/watch?v=${vid}','_blank')">
+              <img class="vid-thumb" src="${thumb}" alt="" loading="lazy"/>
               <div class="vid-play"><div class="play-ico">▶</div></div>
             </div>
             <div class="vid-info">
-              <div class="vid-title">${esc(sn.title)}</div>
-              <div class="vid-meta">
-                <span class="vid-ch">${esc(sn.channelTitle)}</span>
-                <span>${formatDate(sn.publishedAt)}</span>
+              <div class="vid-text" onclick="window.open('https://www.youtube.com/watch?v=${vid}','_blank')" style="cursor:pointer">
+                <div class="vid-title">${esc(sn.title)}</div>
+                <div class="vid-meta">
+                  <span class="vid-ch">${esc(sn.channelTitle)}</span>
+                  <span>${fmtDate(sn.publishedAt)}</span>
+                </div>
               </div>
+              <button class="fav-btn${isFav?" on":""}" title="Als Favorit speichern"
+                onclick="toggleFavResult({id:'${vid}',type:'video',title:${JSON.stringify(sn.title)},thumb:'${thumb}',url:'https://www.youtube.com/watch?v=${vid}',game:'${esc(S.game)}',cat:'${cat.id}'},this)">
+                ${isFav?"❤️":"🤍"}
+              </button>
             </div>
           </div>`;
         }).join("")}
       </div>
-      ${quickBar(q, cat)}`;
-    resCtnt.innerHTML = html;
-    resCtnt.querySelectorAll(".vid-card").forEach((c,i)=>{
-      setTimeout(()=>c.classList.add("in"), i*55);
-    });
-  } catch(e) {
-    resCtnt.innerHTML = fallbackLinks(cat, q);
+      ${quickBar(q,cat)}`;
+    rc.querySelectorAll(".vid-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*50));
+  }catch{
+    document.getElementById("res-content").innerHTML=fallbackLinks(cat,q);
     animCards();
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SCREENSHOTS (RAWG)
-// ═══════════════════════════════════════════════════════════════════════════
-async function loadScreenshots() {
-  const cat = CATS.find(c=>c.id==="screenshots");
-  if (!S.gameSlug && !S.gameData) {
-    resCtnt.innerHTML = fallbackLinks(cat, S.game+" screenshots"); animCards(); return;
-  }
-  try {
-    const slug = S.gameSlug || S.gameData?.slug;
-    const r = await fetch(`${CFG.rawg}/games/${slug}/screenshots?key=${CFG.rawgKey}&page_size=20`);
-    const d = await r.json();
-    if (!d.results?.length) throw new Error();
-    resCtnt.innerHTML = `
+// ═══════════════════════════════════════════════════════
+// SCREENSHOTS
+// ═══════════════════════════════════════════════════════
+async function loadScreenshots(){
+  const cat=CATS.find(c=>c.id==="screenshots");
+  const slug=S.gameSlug||S.gameData?.slug;
+  if(!slug){document.getElementById("res-content").innerHTML=fallbackLinks(cat,S.game+" screenshots");animCards();return;}
+  try{
+    const r=await fetch(`${CFG.rawg}/games/${slug}/screenshots?key=${CFG.rawgKey}&page_size=20`);
+    const d=await r.json();
+    if(!d.results?.length)throw new Error();
+    const rc=document.getElementById("res-content");
+    rc.innerHTML=`
       <div class="res-hdr" style="--cc:${cat.color}">
         <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
       </div>
       <div class="shots-grid">
         ${d.results.map((s,i)=>`
-          <div class="shot-card" style="animation-delay:${i*40}ms" onclick="openLB('${s.image}')">
-            <img src="${s.image}" alt="screenshot" loading="lazy"/>
+          <div class="shot-card" style="animation-delay:${i*35}ms" onclick="openLB('${s.image}')">
+            <img src="${s.image}" loading="lazy" alt="screenshot"/>
           </div>`).join("")}
       </div>`;
-    resCtnt.querySelectorAll(".shot-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*40));
-  } catch {
-    resCtnt.innerHTML = fallbackLinks(cat, S.game+" screenshots");
-    animCards();
-  }
+    rc.querySelectorAll(".shot-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*35));
+  }catch{document.getElementById("res-content").innerHTML=fallbackLinks(cat,S.game+" screenshots");animCards();}
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TIPS (GameFAQs + Google Links)
-// ═══════════════════════════════════════════════════════════════════════════
-function loadTips() {
-  const cat = CATS.find(c=>c.id==="tips");
-  const g = enc(S.game), gq = enc(S.game+" "+(S.plat?.name||""));
-  const links = [
+// ═══════════════════════════════════════════════════════
+// TIPS / CHEATS / BLOGS / DOWNLOADS
+// ═══════════════════════════════════════════════════════
+function loadTips(){
+  const cat=CATS.find(c=>c.id==="tips");
+  const g=enc(S.game),gq=enc(S.game+" "+(S.plat?.name||""));
+  renderLinks(cat,[
     {ico:"📚",site:"GameFAQs – FAQs & Guides",desc:"Offizielle FAQ-Datenbank",url:`https://gamefaqs.gamespot.com/search?game=${g}`},
     {ico:"📖",site:"IGN – Guide",desc:"Ausführliche Spielguides",url:`https://www.ign.com/search?q=${gq}+guide`},
-    {ico:"⭐",site:"Gamestar.de",desc:"Deutsche Spieleseite",url:`https://www.gamestar.de/suche/?keywords=${gq}+tipps`},
+    {ico:"⭐",site:"Gamestar.de",desc:"Deutsche Spieletipps",url:`https://www.gamestar.de/suche/?keywords=${gq}+tipps`},
     {ico:"🕹️",site:"GamePro.de",desc:"Tipps & Tricks auf Deutsch",url:`https://www.gamepro.de/suche/?keywords=${gq}`},
-    {ico:"🔍",site:"Google – Tipps",desc:`„${S.game}" Tipps Tricks deutsch`,url:`https://www.google.de/search?q=${gq}+tipps+tricks`},
-    {ico:"🔍",site:"Google – Guides",desc:`„${S.game}" guide komplettlösung`,url:`https://www.google.de/search?q=${gq}+guide+kompleттlösung`}
-  ];
-  resCtnt.innerHTML = `
-    <div class="res-hdr" style="--cc:${cat.color}">
-      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
-    </div>
-    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
-    ${quickBar(S.game+" tipps tricks", cat)}`;
-  animCards();
+    {ico:"🔍",site:"Google – Tipps",desc:`"${S.game}" Tipps Tricks deutsch`,url:`https://www.google.de/search?q=${gq}+tipps+tricks`},
+    {ico:"🔍",site:"Google – Guides",desc:`"${S.game}" Komplettlösung`,url:`https://www.google.de/search?q=${gq}+guide+komplettl%C3%B6sung`}
+  ]);
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// CHEATS
-// ═══════════════════════════════════════════════════════════════════════════
-function loadCheats() {
-  const cat = CATS.find(c=>c.id==="cheats");
-  const g = enc(S.game), gq = enc(S.game+" "+(S.plat?.name||""));
-  const links = [
+function loadCheats(){
+  const cat=CATS.find(c=>c.id==="cheats");
+  const g=enc(S.game),gq=enc(S.game+" "+(S.plat?.name||""));
+  renderLinks(cat,[
     {ico:"💎",site:"GameFAQs – Cheats",desc:"Cheat-Codes Datenbank",url:`https://gamefaqs.gamespot.com/search?game=${g}&category=cheats`},
     {ico:"🔓",site:"Cheatcc.com",desc:"Cheats & Cheat-Codes",url:`https://www.cheatcc.com/search/?q=${g}`},
     {ico:"🎮",site:"IGN – Cheats",desc:"IGN Cheat-Datenbank",url:`https://www.ign.com/search?q=${gq}+cheats`},
     {ico:"🔑",site:"Cheats.de",desc:"Deutsche Cheat-Seite",url:`https://www.cheats.de/suche/?q=${g}`},
-    {ico:"🔍",site:"Google – Cheats",desc:`„${S.game}" cheat codes`,url:`https://www.google.de/search?q=${gq}+cheat+codes`},
-    {ico:"🔍",site:"Google – Trainer",desc:`„${S.game}" trainer`,url:`https://www.google.de/search?q=${gq}+trainer`}
-  ];
-  resCtnt.innerHTML = `
-    <div class="res-hdr" style="--cc:${cat.color}">
-      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
-    </div>
-    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
-    ${quickBar(S.game+" cheats codes", cat)}`;
-  animCards();
+    {ico:"🔍",site:"Google – Cheats",desc:`"${S.game}" cheat codes`,url:`https://www.google.de/search?q=${gq}+cheat+codes`},
+    {ico:"🔍",site:"Google – Trainer",desc:`"${S.game}" trainer cheat`,url:`https://www.google.de/search?q=${gq}+trainer`}
+  ]);
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// BLOGS / REVIEWS
-// ═══════════════════════════════════════════════════════════════════════════
-function loadBlogs() {
-  const cat = CATS.find(c=>c.id==="blogs");
-  const gq = enc(S.game+" "+(S.plat?.name||""));
-  const links = [
+function loadBlogs(){
+  const cat=CATS.find(c=>c.id==="blogs");
+  const gq=enc(S.game+" "+(S.plat?.name||""));
+  renderLinks(cat,[
     {ico:"🎮",site:"IGN – Review",desc:"Internationales Review",url:`https://www.ign.com/search?q=${gq}+review`},
-    {ico:"⭐",site:"Gamestar.de",desc:"Test & Wertung",url:`https://www.gamestar.de/suche/?keywords=${gq}+test`},
-    {ico:"🕹️",site:"GamePro.de",desc:"Deutsches Review",url:`https://www.gamepro.de/suche/?keywords=${gq}+test`},
+    {ico:"⭐",site:"Gamestar.de – Test",desc:"Test & Wertung",url:`https://www.gamestar.de/suche/?keywords=${gq}+test`},
+    {ico:"🕹️",site:"GamePro.de – Test",desc:"Deutsches Review",url:`https://www.gamepro.de/suche/?keywords=${gq}+test`},
     {ico:"🏆",site:"Metacritic",desc:"Aggregierte Kritiken",url:`https://www.metacritic.com/search/${enc(S.game)}/`},
-    {ico:"🔍",site:"Google – Test",desc:`„${S.game}" test review 2024`,url:`https://www.google.de/search?q=${gq}+test+review`},
-    {ico:"📰",site:"Google – News",desc:`Aktuelle Neuigkeiten`,url:`https://www.google.de/search?q=${gq}&tbm=nws`}
-  ];
-  resCtnt.innerHTML = `
-    <div class="res-hdr" style="--cc:${cat.color}">
-      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
-    </div>
-    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
-    ${quickBar(S.game+" test review", cat)}`;
-  animCards();
+    {ico:"🔍",site:"Google – Test",desc:`"${S.game}" test review`,url:`https://www.google.de/search?q=${gq}+test+review`},
+    {ico:"📰",site:"Google – News",desc:"Aktuelle Neuigkeiten",url:`https://www.google.de/search?q=${gq}&tbm=nws`}
+  ]);
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// DOWNLOADS / MODS
-// ═══════════════════════════════════════════════════════════════════════════
-function loadDownloads() {
-  const cat = CATS.find(c=>c.id==="downloads");
-  const g = enc(S.game), gq = enc(S.game+" "+(S.plat?.name||""));
-  const links = [
+function loadDownloads(){
+  const cat=CATS.find(c=>c.id==="downloads");
+  const g=enc(S.game),gq=enc(S.game+" "+(S.plat?.name||""));
+  renderLinks(cat,[
     {ico:"🔧",site:"Nexus Mods",desc:"Größte Mod-Datenbank",url:`https://www.nexusmods.com/search/?gsearch=${g}`},
     {ico:"💾",site:"ModDB",desc:"Mods & Total Conversions",url:`https://www.moddb.com/search?q=${g}`},
     {ico:"🎮",site:"Steam Workshop",desc:"Steam Mods & DLC",url:`https://steamcommunity.com/search/hub?text=${g}`},
-    {ico:"🔍",site:"Google – Mods",desc:`„${S.game}" mods download`,url:`https://www.google.de/search?q=${gq}+mods+download`},
-    {ico:"🔍",site:"Google – Patch",desc:`„${S.game}" patch update`,url:`https://www.google.de/search?q=${gq}+patch`},
+    {ico:"🔍",site:"Google – Mods",desc:`"${S.game}" mods download`,url:`https://www.google.de/search?q=${gq}+mods+download`},
+    {ico:"🔍",site:"Google – Patch",desc:`"${S.game}" patch update`,url:`https://www.google.de/search?q=${gq}+patch`},
     {ico:"📦",site:"GitHub",desc:"Open-Source Mods & Tools",url:`https://github.com/search?q=${g}+game+mod`}
-  ];
-  resCtnt.innerHTML = `
+  ]);
+}
+
+function renderLinks(cat,links){
+  const platStr=S.plat?.name||"";
+  const q=`${S.game}${platStr?" "+platStr:""} ${cat.label}`;
+  document.getElementById("res-content").innerHTML=`
     <div class="res-hdr" style="--cc:${cat.color}">
-      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
+      <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em>${platStr?` · <em>${platStr}</em>`:""}</span>
     </div>
-    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
-    ${quickBar(S.game+" mods download", cat)}`;
+    <div class="link-grid">
+      ${links.map((l,i)=>{
+        const isFav=FAV_RESULTS.some(f=>f.url===l.url);
+        return `
+        <a class="link-card" href="${l.url}" target="_blank" rel="noopener"
+           style="animation-delay:${i*55}ms;--cc:${cat.color}">
+          <div class="lc-ico">${l.ico}</div>
+          <div class="lc-info">
+            <div class="lc-site">${l.site}</div>
+            <div class="lc-desc">${l.desc}</div>
+          </div>
+          <button class="fav-btn${isFav?" on":""}" style="margin-left:4px" title="Speichern"
+            onclick="event.preventDefault();toggleFavResult({id:'${btoa(l.url).slice(0,12)}',type:'link',title:'${esc(l.site)}',thumb:'',url:'${l.url}',game:'${esc(S.game)}',cat:'${cat.id}'},this)">
+            ${isFav?"❤️":"🤍"}
+          </button>
+          <div class="lc-glow"></div>
+        </a>`;
+      }).join("")}
+    </div>
+    ${quickBar(q,cat)}`;
   animCards();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// HELPERS – UI
-// ═══════════════════════════════════════════════════════════════════════════
-function linkCard(l, i, color) {
-  return `
-    <a class="link-card" href="${l.url}" target="_blank" rel="noopener"
-       style="animation-delay:${i*60}ms;--cc:${color}">
-      <div class="lc-ico">${l.ico}</div>
-      <div class="lc-info">
-        <div class="lc-site">${l.site}</div>
-        <div class="lc-desc">${l.desc}</div>
-      </div>
-      <div class="lc-arr">→</div>
-      <div class="lc-glow"></div>
-    </a>`;
+// ═══════════════════════════════════════════════════════
+// NEW RELEASES
+// ═══════════════════════════════════════════════════════
+async function loadNew(platId){
+  const grid=document.getElementById("new-grid");
+  grid.innerHTML=`<div class="loader"><div class="spin"></div><div class="loader-txt">Lade Neuerscheinungen…</div></div>`;
+  const today=new Date(),past=new Date(today);past.setDate(past.getDate()-60);
+  const from=past.toISOString().slice(0,10),to=today.toISOString().slice(0,10);
+  const pp=platId?`&platforms=${platId}`:"";
+  try{
+    const r=await fetch(`${CFG.rawg}/games?dates=${from},${to}&ordering=-released${pp}&page_size=24&key=${CFG.rawgKey}`);
+    const d=await r.json();
+    if(!d.results?.length)throw new Error("Keine Ergebnisse");
+    grid.innerHTML=d.results.map((g,i)=>{
+      const isFav=FAV_GAMES.some(f=>f.slug===g.slug);
+      return `
+      <div class="game-card" style="animation-delay:${i*40}ms" onclick="searchGame('${esc(g.name)}','${g.slug}')">
+        <span class="new-badge">NEU</span>
+        <button class="game-card-fav${isFav?" on":""}" onclick="event.stopPropagation();toggleFavGameObj({slug:'${g.slug}',name:${JSON.stringify(g.name)},bg:'${g.background_image||""}',rating:${g.rating||0},released:'${g.released||""}'},this)">${isFav?"❤️":"🤍"}</button>
+        <img class="game-card-img" src="${g.background_image||""}" loading="lazy" alt="${esc(g.name)}" onerror="this.style.display='none'"/>
+        <div class="game-card-body">
+          <div class="game-card-title">${esc(g.name)}</div>
+          <div class="game-card-meta">
+            ${g.released?`<span>📅 ${g.released}</span>`:""}
+            ${g.rating?`<span class="game-card-rat">⭐ ${g.rating.toFixed(1)}</span>`:""}
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+    grid.querySelectorAll(".game-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*38));
+  }catch(e){grid.innerHTML=`<div class="empty-state"><div class="empty-ico">😕</div><div class="empty-txt">Fehler beim Laden: ${e.message}</div></div>`;}
 }
 
-function fallbackLinks(cat, q) {
-  const gq = enc(q);
-  const links = [
-    {ico:"🔍",site:"Google.de suchen",desc:q,url:`https://www.google.de/search?q=${gq}`},
-    {ico:"▶️",site:"YouTube suchen",desc:q,url:`https://www.youtube.com/results?search_query=${gq}`}
-  ];
+function filterNew(btn,platId){
+  S.newPlatFilter=platId;
+  document.querySelectorAll("#new-filters .filter-btn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");loadNew(platId);
+}
+
+// ═══════════════════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════════════════
+async function loadCharts(platId){
+  const grid=document.getElementById("chart-grid");
+  grid.innerHTML=`<div class="loader"><div class="spin"></div><div class="loader-txt">Lade Charts…</div></div>`;
+  const pp=platId?`&platforms=${platId}`:"";
+  try{
+    const r=await fetch(`${CFG.rawg}/games?ordering=-metacritic${pp}&page_size=24&metacritic=80,100&key=${CFG.rawgKey}`);
+    const d=await r.json();
+    if(!d.results?.length)throw new Error("Keine Ergebnisse");
+    grid.innerHTML=d.results.map((g,i)=>{
+      const isFav=FAV_GAMES.some(f=>f.slug===g.slug);
+      return `
+      <div class="game-card" style="animation-delay:${i*40}ms" onclick="searchGame('${esc(g.name)}','${g.slug}')">
+        <span class="rank-badge">#${i+1}</span>
+        <button class="game-card-fav${isFav?" on":""}" onclick="event.stopPropagation();toggleFavGameObj({slug:'${g.slug}',name:${JSON.stringify(g.name)},bg:'${g.background_image||""}',rating:${g.rating||0},released:'${g.released||""}'},this)">${isFav?"❤️":"🤍"}</button>
+        <img class="game-card-img" src="${g.background_image||""}" loading="lazy" alt="${esc(g.name)}" onerror="this.style.display='none'"/>
+        <div class="game-card-body">
+          <div class="game-card-title">${esc(g.name)}</div>
+          <div class="game-card-meta">
+            ${g.metacritic?`<span class="game-card-rat">MC ${g.metacritic}</span>`:""}
+            ${g.rating?`<span>⭐ ${g.rating.toFixed(1)}</span>`:""}
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+    grid.querySelectorAll(".game-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*38));
+  }catch(e){grid.innerHTML=`<div class="empty-state"><div class="empty-ico">😕</div><div class="empty-txt">Fehler: ${e.message}</div></div>`;}
+}
+
+function filterCharts(btn,platId){
+  S.chartPlatFilter=platId;
+  document.querySelectorAll("#chart-filters .filter-btn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");loadCharts(platId);
+}
+
+function searchGame(name,slug){
+  showPage("search",document.querySelector("[data-page='search']"));
+  document.getElementById("game-input").value=name;
+  S.game=name;S.gameSlug=slug;S.gameData=null;
+  loadGameBanner(slug||name);
+  addHistory(name);
+  const ct=document.getElementById("cat-tabs");
+  ct.innerHTML=CATS.map(c=>`<button class="cat-btn" data-cat="${c.id}" style="--cc:${c.color}"><span>${c.icon}</span><span class="lbl">${c.label}</span></button>`).join("");
+  ct.querySelectorAll(".cat-btn").forEach(b=>b.addEventListener("click",()=>openCat(b.dataset.cat)));
+  document.getElementById("results").classList.add("show");
+  setTimeout(()=>{document.getElementById("results").scrollIntoView({behavior:"smooth",block:"start"});openCat("videos");},300);
+  renderSavedResultsPanel();
+}
+
+// ═══════════════════════════════════════════════════════
+// FAVOURITES – GAMES
+// ═══════════════════════════════════════════════════════
+function toggleFavGame(){
+  if(!S.gameData)return;
+  const g={slug:S.gameData.slug,name:S.gameData.name,
+    bg:S.gameData.background_image||"",
+    rating:S.gameData.rating||0,released:S.gameData.released||""};
+  const idx=FAV_GAMES.findIndex(f=>f.slug===g.slug);
+  const btn=document.getElementById("fav-game-btn");
+  if(idx>=0){
+    FAV_GAMES.splice(idx,1);
+    if(btn){btn.textContent="🤍";btn.classList.remove("on");}
+    showToast("💔 Aus Favoriten entfernt");
+  }else{
+    FAV_GAMES.unshift(g);
+    if(btn){btn.textContent="❤️";btn.classList.add("on");}
+    showToast("❤️ Zu Favoriten hinzugefügt!");
+  }
+  saveStore(SK.favGames,FAV_GAMES);
+  updateFavBadge();
+}
+
+function toggleFavGameObj(g,btn){
+  const idx=FAV_GAMES.findIndex(f=>f.slug===g.slug);
+  if(idx>=0){
+    FAV_GAMES.splice(idx,1);
+    btn.textContent="🤍";btn.classList.remove("on");
+    showToast("💔 Aus Favoriten entfernt");
+  }else{
+    FAV_GAMES.unshift(g);
+    btn.textContent="❤️";btn.classList.add("on");
+    showToast("❤️ Favorit gespeichert!");
+  }
+  saveStore(SK.favGames,FAV_GAMES);
+  updateFavBadge();
+}
+
+// ═══════════════════════════════════════════════════════
+// FAVOURITES – RESULTS
+// ═══════════════════════════════════════════════════════
+function toggleFavResult(item,btn){
+  const idx=FAV_RESULTS.findIndex(f=>f.id===item.id);
+  if(idx>=0){
+    FAV_RESULTS.splice(idx,1);
+    btn.textContent="🤍";btn.classList.remove("on");
+    showToast("💔 Inhalt entfernt");
+  }else{
+    FAV_RESULTS.unshift(item);
+    btn.textContent="❤️";btn.classList.add("on");
+    showToast("📌 Inhalt gespeichert!");
+  }
+  saveStore(SK.favResults,FAV_RESULTS);
+  updateFavBadge();
+  renderSavedResultsPanel();
+}
+
+function renderSavedResultsPanel(){
+  const panel=document.getElementById("saved-results-panel");
+  const forGame=FAV_RESULTS.filter(f=>f.game===S.game);
+  if(!forGame.length){panel.innerHTML="";return;}
+  panel.innerHTML=`
+    <div class="fav-results-section">
+      <div class="fav-results-title">📌 Deine gespeicherten Inhalte für „${esc(S.game)}"</div>
+      ${forGame.map(f=>`
+        <a class="fav-result-item" href="${f.url}" target="_blank" rel="noopener">
+          ${f.thumb?`<img class="fav-result-thumb" src="${f.thumb}" alt=""/>`:`<div class="fav-result-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.3rem">🔗</div>`}
+          <div class="fav-result-info">
+            <div class="fav-result-title">${esc(f.title)}</div>
+            <div class="fav-result-meta">${f.type==="video"?"▶️ YouTube":f.type==="link"?"🔗 Link":f.type} · ${f.cat}</div>
+          </div>
+          <button class="unfav-btn" onclick="event.preventDefault();toggleFavResult(${JSON.stringify(f).replace(/"/g,"'")},this)">🗑️</button>
+        </a>`).join("")}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// FAVOURITES PAGE
+// ═══════════════════════════════════════════════════════
+function renderFavsPage(){
+  // Games
+  const gg=document.getElementById("fav-games-grid");
+  if(!FAV_GAMES.length){
+    gg.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="empty-ico">🤍</div><div class="empty-txt">Noch keine Spiele gespeichert.<br>Klicke auf 🤍 im Spielbanner!</div></div>`;
+  }else{
+    gg.innerHTML=FAV_GAMES.map((g,i)=>`
+      <div class="game-card in" onclick="searchGame('${esc(g.name)}','${g.slug||""}')">
+        <button class="game-card-fav on" onclick="event.stopPropagation();toggleFavGameObj({slug:'${g.slug}',name:${JSON.stringify(g.name)},bg:'${g.bg}',rating:${g.rating},released:'${g.released}'},this);setTimeout(renderFavsPage,100)">❤️</button>
+        <img class="game-card-img" src="${g.bg||""}" loading="lazy" alt="${esc(g.name)}" onerror="this.style.display='none'"/>
+        <div class="game-card-body">
+          <div class="game-card-title">${esc(g.name)}</div>
+          <div class="game-card-meta">
+            ${g.released?`<span>📅 ${g.released.slice(0,4)}</span>`:""}
+            ${g.rating?`<span class="game-card-rat">⭐ ${(+g.rating).toFixed(1)}</span>`:""}
+          </div>
+        </div>
+      </div>`).join("");
+  }
+  // Results
+  const rl=document.getElementById("fav-results-list");
+  if(!FAV_RESULTS.length){
+    rl.innerHTML=`<div class="empty-state"><div class="empty-ico">📌</div><div class="empty-txt">Noch keine Inhalte gespeichert.<br>Klicke auf 🤍 bei Videos oder Links!</div></div>`;
+  }else{
+    const byGame={};
+    FAV_RESULTS.forEach(f=>{if(!byGame[f.game])byGame[f.game]=[];byGame[f.game].push(f);});
+    rl.innerHTML=Object.entries(byGame).map(([game,items])=>`
+      <div style="margin-bottom:20px">
+        <div style="font-family:'Orbitron',sans-serif;font-size:.75rem;color:var(--text-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em">🎮 ${esc(game)}</div>
+        ${items.map(f=>`
+          <a class="fav-result-item" href="${f.url}" target="_blank" rel="noopener">
+            ${f.thumb?`<img class="fav-result-thumb" src="${f.thumb}" alt=""/>`:`<div class="fav-result-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.3rem">🔗</div>`}
+            <div class="fav-result-info">
+              <div class="fav-result-title">${esc(f.title)}</div>
+              <div class="fav-result-meta">${f.type==="video"?"▶️ YouTube":"🔗 Link"} · ${f.cat}</div>
+            </div>
+            <button class="unfav-btn" onclick="event.preventDefault();FAV_RESULTS.splice(FAV_RESULTS.findIndex(x=>x.id==='${f.id}'),1);saveStore('${SK.favResults}',FAV_RESULTS);updateFavBadge();renderFavsPage()">🗑️</button>
+          </a>`).join("")}
+      </div>`).join("");
+  }
+  updateFavBadge();
+}
+
+function clearAllFavs(){
+  if(!confirm("Alle Favoriten wirklich löschen?"))return;
+  FAV_GAMES=[];FAV_RESULTS=[];
+  saveStore(SK.favGames,[]);saveStore(SK.favResults,[]);
+  updateFavBadge();renderFavsPage();showToast("🗑️ Alle Favoriten gelöscht");
+}
+
+function updateFavBadge(){
+  const total=FAV_GAMES.length+FAV_RESULTS.length;
+  const badge=document.getElementById("fav-badge");
+  if(total>0){badge.textContent=total;badge.style.display="";}
+  else{badge.style.display="none";}
+}
+
+// ═══════════════════════════════════════════════════════
+// DATABASE
+// ═══════════════════════════════════════════════════════
+function loadDB(){
+  try{
+    const raw=localStorage.getItem(SK.db);const ts=localStorage.getItem(SK.dbTs);
+    if(raw){
+      S.dbGames=JSON.parse(raw);S.dbTs=ts;
+      document.getElementById("db-stat").textContent=`${S.dbGames.length.toLocaleString()} Spiele lokal gespeichert`;
+      document.getElementById("db-ts").textContent=ts?`Aktualisiert: ${new Date(ts).toLocaleDateString("de-DE")}`:"";
+    }else{document.getElementById("db-stat").textContent="Leer – aktualisieren für bessere Autovervollständigung";}
+  }catch{document.getElementById("db-stat").textContent="Fehler beim Laden";}
+}
+async function updateDB(){
+  const btn=document.getElementById("upd-btn");const stat=document.getElementById("db-stat");
+  btn.disabled=true;btn.textContent="⏳ Lade…";
+  const all=[];let page=1;
+  try{
+    while(page<=25){
+      const r=await fetch(`${CFG.rawg}/games?page=${page}&page_size=40&ordering=-rating&key=${CFG.rawgKey}`);
+      const d=await r.json();
+      if(!d.results?.length)break;
+      all.push(...d.results.map(g=>({name:g.name,slug:g.slug,released:g.released,
+        bg:g.background_image,rating:g.rating,platforms:(g.platforms||[]).map(p=>p.platform.id)})));
+      stat.textContent=`Lade… ${all.length} Spiele (Seite ${page}/25)`;
+      page++;await sleep(100);
+    }
+    S.dbGames=all;const ts=new Date().toISOString();
+    localStorage.setItem(SK.db,JSON.stringify(all));localStorage.setItem(SK.dbTs,ts);
+    stat.textContent=`✅ ${all.length.toLocaleString()} Spiele gespeichert`;
+    document.getElementById("db-ts").textContent=`Aktualisiert: ${new Date().toLocaleDateString("de-DE")}`;
+  }catch(e){stat.textContent="❌ Fehler: "+e.message;}
+  finally{btn.disabled=false;btn.textContent="🔄 Datenbank aktualisieren";}
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+const enc=s=>encodeURIComponent(s);
+const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const debounce=(fn,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
+function fmtDate(iso){try{return new Date(iso).toLocaleDateString("de-DE",{year:"numeric",month:"short"});}catch{return "";}}
+function openLB(src){document.getElementById("lb-img").src=src;document.getElementById("lightbox").classList.add("show");}
+
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+function fallbackLinks(cat,q){
   return `
     <div class="res-hdr" style="--cc:${cat.color}">
       <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em></span>
     </div>
-    <div class="link-grid">${links.map((l,i)=>linkCard(l,i,cat.color)).join("")}</div>
-    ${quickBar(q, cat)}`;
+    <div class="link-grid">
+      ${[{ico:"🔍",site:"Google.de",url:`https://www.google.de/search?q=${enc(q)}`},
+         {ico:"▶️",site:"YouTube",url:`https://www.youtube.com/results?search_query=${enc(q)}`}]
+        .map((l,i)=>`<a class="link-card" href="${l.url}" target="_blank" style="animation-delay:${i*60}ms;--cc:${cat.color}"><div class="lc-ico">${l.ico}</div><div class="lc-info"><div class="lc-site">${l.site}</div></div><div class="lc-arr">→</div><div class="lc-glow"></div></a>`).join("")}
+    </div>
+    ${quickBar(q,cat)}`;
 }
 
-function quickBar(q, cat) {
-  return `
-    <div class="quick-bar">
-      <span>Direkt suchen:</span>
-      <a class="ql" href="https://www.google.de/search?q=${enc(q)}" target="_blank">🔍 Google.de</a>
-      <a class="ql" href="https://www.youtube.com/results?search_query=${enc(q)}" target="_blank">▶️ YouTube</a>
-      <a class="ql" href="https://duckduckgo.com/?q=${enc(q)}" target="_blank">🦆 DuckDuckGo</a>
-    </div>`;
+function quickBar(q,cat){
+  return `<div class="quick-bar"><span>Direkt suchen:</span>
+    <a class="ql" href="https://www.google.de/search?q=${enc(q)}" target="_blank">🔍 Google.de</a>
+    <a class="ql" href="https://www.youtube.com/results?search_query=${enc(q)}" target="_blank">▶️ YouTube</a>
+    <a class="ql" href="https://duckduckgo.com/?q=${enc(q)}" target="_blank">🦆 DuckDuckGo</a>
+  </div>`;
 }
 
-function animCards() {
-  resCtnt.querySelectorAll(".link-card,.g-card,.vid-card,.shot-card").forEach((c,i)=>{
-    setTimeout(()=>c.classList.add("in"), i*55);
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// DATABASE
-// ═══════════════════════════════════════════════════════════════════════════
-function loadDB() {
-  try {
-    const raw = localStorage.getItem("gf_games");
-    const ts  = localStorage.getItem("gf_ts");
-    if (raw) {
-      S.dbGames = JSON.parse(raw); S.dbTs = ts;
-      dbStat.textContent = `${S.dbGames.length.toLocaleString()} Spiele lokal gespeichert`;
-      dbTs.textContent = ts ? `Aktualisiert: ${new Date(ts).toLocaleDateString("de-DE")}` : "";
-    } else { dbStat.textContent = "Leer – bitte aktualisieren für bessere Autovervollständigung"; }
-  } catch { dbStat.textContent = "Fehler beim Laden"; }
-}
-
-async function updateDB() {
-  updBtn.disabled = true; updBtn.textContent = "⏳ Lade…";
-  const all = []; let page = 1;
-  try {
-    while (page <= 25) {
-      const r = await fetch(`${CFG.rawg}/games?page=${page}&page_size=40&ordering=-rating&key=${CFG.rawgKey}`);
-      const d = await r.json();
-      if (!d.results?.length) break;
-      all.push(...d.results.map(g=>({name:g.name,slug:g.slug,released:g.released,
-        bg:g.background_image,rating:g.rating,platforms:(g.platforms||[]).map(p=>p.platform.id)})));
-      dbStat.textContent = `Lade… ${all.length} Spiele (Seite ${page}/25)`;
-      page++; await sleep(100);
-    }
-    S.dbGames = all;
-    const ts = new Date().toISOString();
-    localStorage.setItem("gf_games", JSON.stringify(all));
-    localStorage.setItem("gf_ts", ts);
-    dbStat.textContent = `✅ ${all.length.toLocaleString()} Spiele gespeichert`;
-    dbTs.textContent = `Aktualisiert: ${new Date().toLocaleDateString("de-DE")}`;
-  } catch(e) {
-    dbStat.textContent = "❌ Fehler: " + e.message;
-  } finally {
-    updBtn.disabled = false; updBtn.textContent = "🔄 Datenbank aktualisieren";
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════════════════════════════════════
-const enc = s => encodeURIComponent(s);
-const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-const sleep = ms => new Promise(r=>setTimeout(r,ms));
-const debounce = (fn,ms) => { let t; return (...a) => { clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
-function formatDate(iso) {
-  if (!iso) return "";
-  try { return new Date(iso).toLocaleDateString("de-DE",{year:"numeric",month:"short"}); } catch { return ""; }
+function animCards(){
+  document.querySelectorAll("#res-content .link-card,.vid-card,.shot-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*50));
 }
 
 init();
