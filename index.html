@@ -1728,19 +1728,31 @@ async function fetchNewsForGame(g) {
     screenshots = (d.results||[]).map(s=>s.image);
   }
 
+  // 3-month cutoff
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - 3);
+
   let dlc = [];
+  let dlcFresh = []; // only entries within 3 months
   if (dlcRes.status==="fulfilled" && dlcRes.value.ok) {
     const d = await dlcRes.value.json();
     dlc = (d.results||[]).map(x=>({
-      name: x.name,
-      bg: x.background_image||"",
+      name:     x.name,
+      bg:       x.background_image||"",
       released: x.released||"",
-      rating: x.rating||0,
-      tag: guessDLCTag(x.name)
+      rating:   x.rating||0,
+      tag:      guessDLCTag(x.name),
+      isFresh:  x.released ? new Date(x.released) >= cutoff : false
     }));
+    dlcFresh = dlc.filter(x=>x.isFresh);
   }
 
-  return { screenshots, dlc, fetchedAt: new Date().toISOString() };
+  return {
+    screenshots,
+    dlc,
+    dlcFresh,         // only ≤ 3 months old
+    fetchedAt: new Date().toISOString()
+  };
 }
 
 function guessDLCTag(name) {
@@ -1752,16 +1764,18 @@ function guessDLCTag(name) {
 
 function renderNewsList(list) {
   list.innerHTML = FAV_GAMES.map((g, i) => {
-    const data = newsCache[g.slug] || { screenshots:[], dlc:[] };
-    const hasContent = data.screenshots.length > 0 || data.dlc.length > 0;
-    const newCount = data.screenshots.length + data.dlc.length;
+    const data      = newsCache[g.slug] || { screenshots:[], dlc:[], dlcFresh:[] };
+    const dlcFresh  = data.dlcFresh || data.dlc.filter(x=>x.isFresh);
+    const hasFreshDLC = dlcFresh.length > 0;
+    const hasContent  = data.screenshots.length > 0 || data.dlc.length > 0;
+    const freshCount  = dlcFresh.length;
 
     const gNews   = enc(`${g.name} neuigkeiten`);
     const gPatch  = enc(`${g.name} patch update DLC`);
     const gReview = enc(`${g.name} news`);
 
     return `
-    <div class="news-card${hasContent?" has-new":""}" id="nc-${i}" style="animation-delay:${i*60}ms">
+    <div class="news-card${hasFreshDLC?" has-new":""}" id="nc-${i}" style="animation-delay:${i*60}ms">
       <div class="news-card-hdr" onclick="toggleNewsCard(${i})">
         ${g.bg
           ? `<img class="news-card-cover" src="${g.bg}" loading="lazy" alt="" onerror="this.style.display='none'">`
@@ -1771,7 +1785,11 @@ function renderNewsList(list) {
           <div class="news-card-sub">
             ${g.released ? `<span>📅 ${g.released.slice(0,4)}</span>` : ""}
             ${g.rating   ? `<span>⭐ ${(+g.rating).toFixed(1)}</span>` : ""}
-            ${newCount   ? `<span class="news-new-badge">+${newCount} Inhalte</span>` : `<span>Keine neuen Einträge</span>`}
+            ${hasFreshDLC
+              ? `<span class="news-new-badge">🆕 ${freshCount} neu (≤ 3 Monate)</span>`
+              : hasContent
+                ? `<span style="font-size:.7rem;color:var(--text-3)">Keine neuen Einträge</span>`
+                : `<span style="font-size:.7rem;color:var(--text-3)">Keine Daten</span>`}
           </div>
         </div>
         <span class="news-card-chevron">▼</span>
@@ -1789,43 +1807,39 @@ function renderNewsList(list) {
               : `<div class="news-no-shots">Keine Screenshots verfügbar</div>`}
           </div>
 
-          <!-- DLC / ADDITIONS -->
+          <!-- DLC -->
           <div class="news-section">
-            <div class="news-section-title"><span>📦</span> DLC & Erweiterungen</div>
-            ${data.dlc.length
-              ? `<div class="news-dlc-list">
-                  ${data.dlc.map(d=>`
-                    <div class="news-dlc-item">
-                      ${d.bg ? `<img class="news-dlc-img" src="${d.bg}" loading="lazy" alt="" onerror="this.style.display='none'">` : ""}
-                      <div class="news-dlc-info">
-                        <div class="news-dlc-name">${esc(d.name)}</div>
-                        <div class="news-dlc-meta">${d.released ? `📅 ${d.released}` : ""}${d.rating ? ` · ⭐ ${d.rating.toFixed(1)}` : ""}</div>
+            <div class="news-section-title">
+              <span>📦</span> DLC & Erweiterungen
+              <span style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-3);margin-left:6px;font-weight:400">(🆕 = letzte 3 Monate)</span>
+            </div>
+            ${data.dlc.length ? `
+              <div class="news-dlc-list">
+                ${data.dlc.map(d=>`
+                  <div class="news-dlc-item" style="${d.isFresh?"border-color:rgba(0,245,212,.3)":""}">
+                    ${d.bg ? `<img class="news-dlc-img" src="${d.bg}" loading="lazy" alt="" onerror="this.style.display='none'">` : ""}
+                    <div class="news-dlc-info">
+                      <div class="news-dlc-name">${d.isFresh?`<span style="color:var(--cyan);margin-right:4px">🆕</span>`:""} ${esc(d.name)}</div>
+                      <div class="news-dlc-meta">
+                        ${d.released ? `📅 ${d.released}` : "Kein Datum"}
+                        ${d.rating ? ` · ⭐ ${d.rating.toFixed(1)}` : ""}
+                        ${!d.isFresh && d.released ? ` · <span style="color:var(--text-3);font-size:.65rem">älter als 3 Monate</span>` : ""}
                       </div>
-                      <span class="news-dlc-tag ${d.tag}">${d.tag.toUpperCase()}</span>
-                    </div>`).join("")}
-                 </div>`
-              : `<div class="news-no-dlc">Keine DLCs / Erweiterungen gefunden</div>`}
+                    </div>
+                    <span class="news-dlc-tag ${d.tag}">${d.tag.toUpperCase()}</span>
+                  </div>`).join("")}
+              </div>` : `<div class="news-no-dlc">Keine DLCs / Erweiterungen gefunden</div>`}
           </div>
 
-          <!-- GOOGLE NEWS LINKS -->
+          <!-- GOOGLE NEWS -->
           <div class="news-section">
             <div class="news-section-title"><span>🔍</span> Google News & Updates</div>
             <div class="news-glinks">
-              <a class="news-glink" href="https://www.google.de/search?q=${gNews}&tbm=nws" target="_blank" rel="noopener">
-                📰 Aktuelle News
-              </a>
-              <a class="news-glink" href="https://www.google.de/search?q=${gPatch}" target="_blank" rel="noopener">
-                🔧 Patches & Updates
-              </a>
-              <a class="news-glink" href="https://www.google.de/search?q=${gReview}&tbm=nws" target="_blank" rel="noopener">
-                🌐 Allgemeine News
-              </a>
-              <a class="news-glink" href="https://www.gamestar.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">
-                ⭐ Gamestar
-              </a>
-              <a class="news-glink" href="https://www.gamepro.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">
-                🕹️ GamePro
-              </a>
+              <a class="news-glink" href="https://www.google.de/search?q=${gNews}&tbm=nws" target="_blank" rel="noopener">📰 Aktuelle News</a>
+              <a class="news-glink" href="https://www.google.de/search?q=${gPatch}" target="_blank" rel="noopener">🔧 Patches & Updates</a>
+              <a class="news-glink" href="https://www.google.de/search?q=${gReview}&tbm=nws" target="_blank" rel="noopener">🌐 Allgemeine News</a>
+              <a class="news-glink" href="https://www.gamestar.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">⭐ Gamestar</a>
+              <a class="news-glink" href="https://www.gamepro.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">🕹️ GamePro</a>
             </div>
           </div>
 
@@ -1833,7 +1847,6 @@ function renderNewsList(list) {
       </div>
     </div>`;
   }).join("");
-
   document.querySelectorAll(".news-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*55));
 }
 
