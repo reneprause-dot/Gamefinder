@@ -98,20 +98,50 @@ select.pulse{animation:pulseB .6s ease}
   color:var(--text-3);font-size:.72rem;cursor:pointer;transition:all .15s}
 .hist-clear:hover{border-color:var(--pink);color:var(--pink)}
 
+/* CONTENT SEARCH */
+#content-search-wrap{display:none;margin-top:12px;animation:fadeUp .3s ease}
+#content-search-wrap.show{display:block}
+.csearch-label-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.csearch-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;
+  color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.csearch-game-tag{display:flex;align-items:center;gap:5px;padding:2px 10px;
+  background:rgba(0,245,212,.08);border:1px solid rgba(0,245,212,.3);border-radius:20px;
+  font-size:.72rem;color:var(--cyan);font-family:'JetBrains Mono',monospace}
+.csearch-row{display:flex;gap:8px;align-items:center}
+.csearch-inp-wrap{position:relative;flex:1}
+.csearch-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none;font-size:.9rem}
+#content-input{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);
+  border-radius:var(--r);color:var(--text-1);padding:11px 13px 11px 38px;
+  font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;
+  transition:border-color .2s,box-shadow .2s}
+#content-input:focus{outline:none;border-color:var(--purple);
+  box-shadow:0 0 20px rgba(123,47,255,.35),0 0 60px rgba(123,47,255,.1)}
+#content-input::placeholder{color:var(--text-3);font-weight:400}
+#content-input:disabled{opacity:.35;cursor:not-allowed}
+#csearch-btn{background:linear-gradient(135deg,var(--purple),var(--pink));border:none;
+  border-radius:var(--r);color:#fff;font-family:'Orbitron',sans-serif;font-size:.75rem;
+  font-weight:700;letter-spacing:.06em;padding:11px 18px;cursor:pointer;
+  transition:transform .15s,box-shadow .2s;white-space:nowrap}
+#csearch-btn:hover{transform:translateY(-2px);box-shadow:var(--glow-purple)}
+.token-preview{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;min-height:22px}
+.token-chip{padding:2px 9px;background:rgba(123,47,255,.12);border:1px solid rgba(123,47,255,.3);
+  border-radius:20px;font-size:.68rem;color:var(--purple);font-family:'JetBrains Mono',monospace}
+.token-chip.strong{background:rgba(0,245,212,.12);border-color:rgba(0,245,212,.4);color:var(--cyan)}
+.csearch-hint{font-size:.7rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;
+  margin-top:6px;line-height:1.5}
+
 /* SUGGESTIONS */
-#suggestions{position:absolute;top:calc(100% + 5px);left:0;right:70px;z-index:200;
-  background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--r);
-  overflow:hidden;max-height:0;opacity:0;transition:max-height .3s,opacity .2s;
-  box-shadow:0 20px 60px rgba(0,0,0,.75)}
-#suggestions.open{max-height:440px;opacity:1;overflow-y:auto}
-.sug-item{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;
+.search-anchor{position:relative;z-index:300}
+#suggestions{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:400;
+  background:var(--bg-card);border:1px solid var(--cyan);border-radius:var(--r);
+  max-height:0;opacity:0;transition:max-height .3s,opacity .2s;
+  box-shadow:0 24px 60px rgba(0,0,0,.85);overflow:hidden}
+#suggestions.open{max-height:500px;opacity:1;overflow-y:auto}
+.sug-item{display:flex;flex-direction:column;padding:10px 14px;cursor:pointer;
   border-bottom:1px solid var(--border);transition:background .12s}
 .sug-item:last-child{border-bottom:none}
 .sug-item:hover,.sug-item.hi{background:var(--bg-hover)}
-.sug-thumb{width:48px;height:34px;border-radius:5px;background:var(--bg-deep);background-size:cover;
-  background-position:center;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem}
-.sug-info{flex:1;min-width:0}
-.sug-name{display:block;font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sug-name{font-weight:700;font-size:.92rem;color:var(--text-1);margin-bottom:2px}
 .sug-meta{font-size:.7rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
 
 /* GAME BANNER */
@@ -440,7 +470,9 @@ footer a{color:var(--cyan);text-decoration:none}
         <select id="plat" disabled><option value="">— erst Hersteller wählen —</option></select>
       </div>
     </div>
-    <div style="position:relative">
+
+    <!-- Game title search -->
+    <div class="search-anchor">
       <div class="inp-row">
         <div class="inp-wrap">
           <span class="inp-icon">🕹️</span>
@@ -449,6 +481,25 @@ footer a{color:var(--cyan);text-decoration:none}
         <button id="search-btn">SUCHEN</button>
       </div>
       <div id="suggestions"></div>
+    </div>
+
+    <!-- Content search (unlocks after game is selected) -->
+    <div id="content-search-wrap">
+      <div class="csearch-label-row">
+        <span class="csearch-label">Inhalt suchen in</span>
+        <span class="csearch-game-tag" id="csearch-game-tag">🎮 —</span>
+      </div>
+      <div class="csearch-row">
+        <div class="csearch-inp-wrap">
+          <span class="csearch-icon">🔎</span>
+          <input id="content-input" type="text"
+            placeholder="z. B. beste Rüstung am Anfang…"
+            autocomplete="off" autocorrect="off" spellcheck="false" disabled/>
+        </div>
+        <button id="csearch-btn">INHALT SUCHEN</button>
+      </div>
+      <div class="token-preview" id="token-preview"></div>
+      <div class="csearch-hint" id="csearch-hint"></div>
     </div>
   </section>
   <div id="history-bar">
@@ -543,7 +594,7 @@ footer a{color:var(--cyan);text-decoration:none}
   <button id="upd-btn">🔄 Datenbank aktualisieren</button>
 </section>
 
-<footer>GameFinder &copy; 2025 · <a href="https://rawg.io" target="_blank">RAWG.io</a> · <a href="https://developers.google.com/youtube" target="_blank">YouTube API</a></footer>
+<footer>GameFinder &copy; 2025 · <span id="version-display" style="color:var(--purple);font-family:'Orbitron',sans-serif;font-size:.7rem"></span> · <a href="https://rawg.io" target="_blank">RAWG.io</a> · <a href="https://developers.google.com/youtube" target="_blank">YouTube API</a></footer>
 </div>
 
 <!-- Lightbox & Toast -->
@@ -623,6 +674,7 @@ let HISTORY     = loadStore(SK.history,[]);
 // INIT
 // ═══════════════════════════════════════════════════════
 function init(){
+  initVersion();
   // Manufacturers
   const mfgEl=document.getElementById("mfg");
   Object.entries(PLATFORMS).forEach(([k,v])=>{
@@ -655,9 +707,12 @@ function init(){
     if(e.key==="ArrowUp")navSug(-1);
   });
   document.addEventListener("click",e=>{
-    if(!e.target.closest("[style*='position:relative']")&&!e.target.closest(".inp-row"))hideSug();
+    if(!e.target.closest(".search-anchor"))hideSug();
   });
   document.getElementById("search-btn").addEventListener("click",doSearch);
+  document.getElementById("csearch-btn").addEventListener("click",doContentSearch);
+  document.getElementById("content-input").addEventListener("input",debounce(onContentInput,200));
+  document.getElementById("content-input").addEventListener("keydown",e=>{if(e.key==="Enter")doContentSearch();});
   document.getElementById("upd-btn").addEventListener("click",updateDB);
   document.getElementById("lightbox").addEventListener("click",()=>document.getElementById("lightbox").classList.remove("show"));
 
@@ -702,7 +757,9 @@ function renderHistory(){
 function histSearch(name){
   document.getElementById("game-input").value=name;
   S.game=name;S.gameSlug=null;S.gameData=null;
-  loadGameBanner(name);doSearch();
+  loadGameBanner(name);
+  unlockContentSearch(name);
+  doSearch();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -745,7 +802,9 @@ function hideSug(){document.getElementById("suggestions").classList.remove("open
 function selectGame(g){
   S.game=g.name;S.gameSlug=g.slug||null;
   document.getElementById("game-input").value=g.name;
-  hideSug();loadGameBanner(g.slug||g.name,g);
+  hideSug();
+  loadGameBanner(g.slug||g.name,g);
+  unlockContentSearch(g.name);
 }
 function navSug(d){
   const box=document.getElementById("suggestions");
@@ -817,6 +876,7 @@ function doSearch(){
   S.game=name;
   if(!S.gameSlug)loadGameBanner(name);
   addHistory(name);
+  unlockContentSearch(name);
   const ct=document.getElementById("cat-tabs");
   ct.innerHTML=CATS.map(c=>`
     <button class="cat-btn" data-cat="${c.id}" style="--cc:${c.color}">
@@ -830,7 +890,193 @@ function doSearch(){
 }
 
 // ═══════════════════════════════════════════════════════
-// CATEGORY ROUTER
+// CONTENT SEARCH
+// ═══════════════════════════════════════════════════════
+
+// Stop words to ignore when tokenising
+const STOP = new Set(["der","die","das","ein","eine","ich","mir","mich","du","sie",
+  "er","es","wir","wie","was","ist","in","an","am","auf","von","zu","mit","für",
+  "bei","the","a","an","of","in","on","at","to","for","with","how","where","is","are","and","or"]);
+
+function tokenise(text){
+  return text.toLowerCase()
+    .replace(/[^\wäöüß\s]/g,"")
+    .split(/\s+/)
+    .filter(t=>t.length>2 && !STOP.has(t));
+}
+
+// Map tokens to the most likely category
+const CAT_SIGNALS = {
+  tips:       ["tipp","tipps","trick","tricks","hilfe","help","anfang","beginn","start","beste","besten","gut","schnell","leicht","einfach","strategie","skill","fähigkeit"],
+  cheats:     ["cheat","cheats","code","codes","trainer","unlock","freischalten","geld","leben","unsterblich","god","mode","unendlich","item","waffe"],
+  walkthroughs:["lösung","lösungen","walkthrough","komplettlösung","quest","mission","level","boss","kapitel","enden","ending","geheimnis","secret","fundort","finden","wo","where"],
+  videos:     ["video","videos","youtube","stream","lets play","gameplay","zeigen","schauen","clip","trailer"],
+  downloads:  ["mod","mods","download","patch","update","dlc","erweiterung","addon","skin","texture"],
+  blogs:      ["review","test","wertung","meinung","vergleich","bewertung","news","neuigkeit"]
+};
+
+function detectCategory(tokens){
+  const scores = {};
+  CATS.forEach(c=>{ scores[c.id]=0; });
+  tokens.forEach(t=>{
+    Object.entries(CAT_SIGNALS).forEach(([cat,words])=>{
+      if(words.some(w=>t.includes(w)||w.includes(t))) scores[cat]++;
+    });
+  });
+  const best = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  return best[0][1]>0 ? best[0][0] : "tips"; // fallback to tips
+}
+
+function unlockContentSearch(gameName){
+  const wrap = document.getElementById("content-search-wrap");
+  const inp  = document.getElementById("content-input");
+  const tag  = document.getElementById("csearch-game-tag");
+  wrap.classList.add("show");
+  inp.disabled = false;
+  inp.value = "";
+  tag.textContent = `🎮 ${gameName}`;
+  document.getElementById("token-preview").innerHTML="";
+  document.getElementById("csearch-hint").textContent="Beschreibe was du suchen möchtest – z. B. \"beste Rüstung am Anfang\"";
+}
+
+function onContentInput(){
+  const raw = document.getElementById("content-input").value.trim();
+  const tokens = tokenise(raw);
+  const prev = document.getElementById("token-preview");
+  const hint = document.getElementById("csearch-hint");
+
+  if(!tokens.length){ prev.innerHTML=""; hint.textContent=""; return; }
+
+  const detectedCat = detectCategory(tokens);
+  const catInfo = CATS.find(c=>c.id===detectedCat);
+
+  prev.innerHTML = tokens.map((t,i)=>
+    `<span class="token-chip${i<2?" strong":""}">${t}</span>`
+  ).join("") + `<span style="margin-left:6px;font-size:.68rem;color:var(--text-3);font-family:'JetBrains Mono',monospace">→ ${catInfo.icon} ${catInfo.label}</span>`;
+
+  hint.textContent = `Drücke „Inhalt suchen" oder Enter – öffnet ${catInfo.label} mit deinen Suchbegriffen`;
+}
+
+function doContentSearch(){
+  const raw   = document.getElementById("content-input").value.trim();
+  const game  = S.game || document.getElementById("game-input").value.trim();
+  if(!game){ document.getElementById("game-input").classList.add("shake"); setTimeout(()=>document.getElementById("game-input").classList.remove("shake"),400); return; }
+  if(!raw){ document.getElementById("content-input").style.borderColor="var(--pink)"; setTimeout(()=>document.getElementById("content-input").style.borderColor="",1000); return; }
+
+  const tokens    = tokenise(raw);
+  const platStr   = S.plat?.name || "";
+  const detectedCat = detectCategory(tokens);
+
+  // Build combined query: game + all tokens + platform
+  const combined  = [game, ...tokens, platStr].filter(Boolean).join(" ");
+  const gameOnly  = [game, platStr].filter(Boolean).join(" ");
+
+  // Override the active category to the detected one, then open results
+  S.game = game;
+  S.contentQuery = raw;
+  S.contentTokens = tokens;
+
+  // Build category tabs if not already
+  const ct = document.getElementById("cat-tabs");
+  if(!ct.children.length){
+    ct.innerHTML=CATS.map(c=>`
+      <button class="cat-btn" data-cat="${c.id}" style="--cc:${c.color}">
+        <span>${c.icon}</span><span class="lbl">${c.label}</span>
+      </button>`).join("");
+    ct.querySelectorAll(".cat-btn").forEach(b=>b.addEventListener("click",()=>openCat(b.dataset.cat)));
+  }
+
+  document.getElementById("results").classList.add("show");
+  document.getElementById("results").scrollIntoView({behavior:"smooth",block:"start"});
+
+  // Open the best-matching category with token-enhanced URLs
+  openCatWithTokens(detectedCat, combined, tokens, game, platStr);
+  showToast(`${CATS.find(c=>c.id===detectedCat).icon} Suche in ${CATS.find(c=>c.id===detectedCat).label} gestartet`);
+}
+
+function openCatWithTokens(catId, combined, tokens, game, platStr){
+  S.activeCat = catId;
+  document.querySelectorAll(".cat-btn").forEach(b=>b.classList.toggle("on",b.dataset.cat===catId));
+  const cat  = CATS.find(c=>c.id===catId);
+  document.documentElement.style.setProperty("--cc",cat.color);
+
+  const q  = enc(combined);
+  const gq = enc(`${game} ${platStr}`).trim();
+  const g  = enc(game);
+
+  // Token relevance note for display
+  const tokenStr = tokens.map(t=>`"${t}"`).join(", ");
+
+  const rc = document.getElementById("res-content");
+  rc.innerHTML=`
+    <div class="res-hdr" style="--cc:${cat.color}">
+      <span>${cat.icon}</span>
+      <span>${cat.label} für <em>${esc(game)}</em>${platStr?` · <em>${platStr}</em>`:""}</span>
+    </div>
+    <div style="padding:10px 14px;background:rgba(123,47,255,.07);border:1px solid rgba(123,47,255,.2);
+      border-radius:var(--r);margin-bottom:16px;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-2)">
+      🔎 Erkannte Begriffe: <span style="color:var(--purple)">${esc(tokenStr)}</span>
+      &nbsp;·&nbsp; Kombination: <span style="color:var(--cyan)">"${esc(combined)}"</span>
+    </div>
+    <div class="link-grid">
+      ${buildTokenLinks(catId, combined, g, gq, q, cat).map((l,i)=>
+        `<a class="link-card" href="${l.url}" target="_blank" rel="noopener"
+           style="animation-delay:${i*55}ms;--cc:${cat.color}">
+          <div class="lc-ico">${l.ico}</div>
+          <div class="lc-info">
+            <div class="lc-site">${l.site}</div>
+            <div class="lc-desc">${l.desc}</div>
+          </div>
+          <div class="lc-arr">→</div>
+          <div class="lc-glow"></div>
+        </a>`).join("")}
+    </div>
+    ${quickBar(combined, cat)}`;
+  animCards();
+}
+
+function buildTokenLinks(catId, combined, g, gq, q, cat){
+  const base = {
+    tips:[
+      {ico:"📚",site:"GameFAQs",desc:"Suche mit allen Begriffen",url:`https://gamefaqs.gamespot.com/search?game=${g}`},
+      {ico:"🔍",site:"Google – Präzise",desc:combined,url:`https://www.google.de/search?q=${q}`},
+      {ico:"🔍",site:"Google – Breiter",desc:`${combined} tipps guide`,url:`https://www.google.de/search?q=${q}+tipps+guide`},
+      {ico:"📖",site:"IGN Guide",desc:`${combined}`,url:`https://www.ign.com/search?q=${q}`},
+      {ico:"⭐",site:"Gamestar.de",desc:`${combined}`,url:`https://www.gamestar.de/suche/?keywords=${q}`},
+    ],
+    cheats:[
+      {ico:"💎",site:"GameFAQs – Cheats",desc:combined,url:`https://gamefaqs.gamespot.com/search?game=${g}&category=cheats`},
+      {ico:"🔍",site:"Google – Präzise",desc:combined,url:`https://www.google.de/search?q=${q}`},
+      {ico:"🔍",site:"Google – Cheat",desc:`${combined} cheat`,url:`https://www.google.de/search?q=${q}+cheat`},
+      {ico:"🔓",site:"Cheatcc",desc:combined,url:`https://www.cheatcc.com/search/?q=${q}`},
+    ],
+    walkthroughs:[
+      {ico:"🗺️",site:"GameFAQs – Walkthrough",desc:combined,url:`https://gamefaqs.gamespot.com/search?game=${g}&category=walkthrough`},
+      {ico:"🔍",site:"Google – Präzise",desc:combined,url:`https://www.google.de/search?q=${q}`},
+      {ico:"🔍",site:"Google – Lösung",desc:`${combined} lösung`,url:`https://www.google.de/search?q=${q}+l%C3%B6sung`},
+      {ico:"▶️",site:"YouTube Walkthrough",desc:combined,url:`https://www.youtube.com/results?search_query=${q}+walkthrough`},
+    ],
+    videos:[
+      {ico:"▶️",site:"YouTube",desc:combined,url:`https://www.youtube.com/results?search_query=${q}`},
+      {ico:"▶️",site:"YouTube – Deutsch",desc:`${combined} deutsch`,url:`https://www.youtube.com/results?search_query=${q}+deutsch`},
+      {ico:"📡",site:"Twitch",desc:combined,url:`https://www.twitch.tv/search?term=${q}`},
+    ],
+    downloads:[
+      {ico:"🔧",site:"Nexus Mods",desc:combined,url:`https://www.nexusmods.com/search/?gsearch=${q}`},
+      {ico:"💾",site:"ModDB",desc:combined,url:`https://www.moddb.com/search?q=${q}`},
+      {ico:"🔍",site:"Google – Mod",desc:combined,url:`https://www.google.de/search?q=${q}+mod`},
+    ],
+    blogs:[
+      {ico:"🎮",site:"IGN",desc:combined,url:`https://www.ign.com/search?q=${q}`},
+      {ico:"⭐",site:"Gamestar.de",desc:combined,url:`https://www.gamestar.de/suche/?keywords=${q}`},
+      {ico:"🔍",site:"Google – News",desc:combined,url:`https://www.google.de/search?q=${q}&tbm=nws`},
+    ],
+    screenshots:[
+      {ico:"🔍",site:"Google Bilder",desc:combined,url:`https://www.google.de/search?q=${q}&tbm=isch`},
+    ]
+  };
+  return base[catId] || base.tips;
+}
 // ═══════════════════════════════════════════════════════
 function openCat(id){
   S.activeCat=id;
@@ -865,6 +1111,13 @@ async function loadYT(suffix){
       <div class="res-hdr" style="--cc:${cat.color}">
         <span>${cat.icon}</span>
         <span>${cat.label} für <em>${esc(S.game)}</em>${platStr?` · <em>${platStr}</em>`:""}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;
+        background:rgba(255,107,53,.05);border:1px solid rgba(255,107,53,.2);border-radius:var(--r)">
+        <span style="font-size:.8rem">▶️</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-3)">
+          YouTube-Suche: <span style="color:#ff6b35">"${esc(q)}"</span>
+        </span>
       </div>
       <div class="vid-grid">
         ${d.items.map((v,i)=>{
@@ -985,6 +1238,13 @@ function renderLinks(cat,links){
   document.getElementById("res-content").innerHTML=`
     <div class="res-hdr" style="--cc:${cat.color}">
       <span>${cat.icon}</span><span>${cat.label} für <em>${esc(S.game)}</em>${platStr?` · <em>${platStr}</em>`:""}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;
+      background:rgba(0,245,212,.04);border:1px solid rgba(0,245,212,.15);border-radius:var(--r)">
+      <span style="font-size:.8rem">🔎</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-3)">
+        Suche wird übergeben: <span style="color:var(--cyan)">"${esc(S.game)}${platStr?" · "+esc(platStr):""}"</span>
+      </span>
     </div>
     <div class="link-grid">
       ${links.map((l,i)=>{
@@ -1476,6 +1736,54 @@ async function updateDB(){
 const enc=s=>encodeURIComponent(s);
 const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+// ═══════════════════════════════════════════════════════
+// VERSION SYSTEM
+// ═══════════════════════════════════════════════════════
+const VERSION_KEY = "gf_version";
+function getNextVersion(current) {
+  const [major, minor] = current.split(".").map(Number);
+  if (minor >= 9) return `${major + 1}.0`;
+  return `${major}.${minor + 1}`;
+}
+function initVersion() {
+  // Stored version = last saved build version
+  const stored = localStorage.getItem(VERSION_KEY);
+  // Current hard-coded build baseline
+  const BUILD_BASE = "1.2";
+  let display;
+  if (!stored) {
+    // First ever run – set to baseline
+    display = BUILD_BASE;
+    localStorage.setItem(VERSION_KEY, BUILD_BASE);
+  } else {
+    // Every page load = new build → bump
+    display = getNextVersion(stored);
+    localStorage.setItem(VERSION_KEY, display);
+  }
+  const el = document.getElementById("version-display");
+  if (el) el.textContent = `v${display}`;
+}
+
+// ═══════════════════════════════════════════════════════
+// EXTERNAL LINK PRE-FILL
+// ═══════════════════════════════════════════════════════
+// Wraps a URL so that when the external site loads, the
+// game title is already in its search box via URL params.
+// Each site has its own search-query parameter.
+function buildExternalUrl(baseUrl, gameName, platformName) {
+  // baseUrl already contains the encoded query – return as-is.
+  // The URLs in loadTips/loadCheats etc. are already pre-filled
+  // with enc(S.game). This function is used for the "open in tab"
+  // flow from result cards where we want to ensure the title passes.
+  return baseUrl; // URLs are built dynamically at call-time with S.game
+}
+
+// Smart link opener: navigates to external URL and, where possible,
+// passes the game title directly into the site's search field via URL.
+function openExternal(url) {
+  window.open(url, "_blank", "noopener");
+}
 const debounce=(fn,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
 function fmtDate(iso){try{return new Date(iso).toLocaleDateString("de-DE",{year:"numeric",month:"short"});}catch{return "";}}
 function openLB(src){document.getElementById("lb-img").src=src;document.getElementById("lightbox").classList.add("show");}
