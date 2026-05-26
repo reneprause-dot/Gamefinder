@@ -20,6 +20,34 @@
   --glow-pink:0 0 20px rgba(247,37,133,.4),0 0 60px rgba(247,37,133,.1);
   --r:12px;--rl:20px;
 }
+/* ── LIGHT THEME ── */
+body.light{
+  --bg-void:#f0f2f8;--bg-deep:#e4e7f2;--bg-card:#ffffff;--bg-hover:#eceef8;
+  --border:#d0d4e8;--border-lit:#b8bedd;
+  --text-1:#1a1a2e;--text-2:#4a4a70;--text-3:#8888aa;
+  --glow-cyan:0 0 14px rgba(0,180,160,.25);
+  --glow-purple:0 0 14px rgba(100,40,200,.2);
+}
+body.light::before{
+  background-image:linear-gradient(rgba(0,180,160,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,180,160,.04) 1px,transparent 1px);
+}
+body.light .search-card{
+  background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(235,238,252,.95));
+}
+body.light select,body.light #game-input,body.light #content-input{
+  background:var(--bg-deep);color:var(--text-1);
+}
+body.light select option{background:#e4e7f2;}
+body.light .res-box,body.light .game-card,body.light .link-card,
+body.light .vid-card,body.light .db-sec,body.light .news-card{
+  background:var(--bg-card);
+}
+/* theme toggle button */
+.theme-btn{background:transparent;border:1px solid var(--border-lit);border-radius:var(--r);
+  padding:8px 12px;font-size:1rem;cursor:pointer;transition:all .2s;line-height:1;
+  color:var(--text-2)}
+.theme-btn:hover{border-color:var(--cyan);box-shadow:var(--glow-cyan)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'Rajdhani',sans-serif;background:var(--bg-void);color:var(--text-1);min-height:100vh;overflow-x:hidden;line-height:1.6}
@@ -416,11 +444,40 @@ footer a{color:var(--cyan);text-decoration:none}
   text-decoration:none;color:var(--text-2);font-size:.82rem;transition:all .15s;white-space:nowrap}
 .news-glink:hover{border-color:var(--cyan);color:var(--cyan)}
 
-/* LIGHTBOX */
-#lightbox{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.92);
-  align-items:center;justify-content:center;cursor:zoom-out}
+/* LIGHTBOX – image + video */
+#lightbox{display:none;position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,.94);
+  align-items:center;justify-content:center;flex-direction:column;gap:14px}
 #lightbox.show{display:flex}
-#lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;border:1px solid var(--border-lit)}
+#lightbox img{max-width:92vw;max-height:82vh;border-radius:12px;border:1px solid var(--border-lit)}
+#lb-video-wrap{width:min(900px,92vw);aspect-ratio:16/9;border-radius:12px;overflow:hidden;
+  border:1px solid var(--border-lit);background:#000}
+#lb-video-wrap iframe{width:100%;height:100%;border:none}
+#lb-close{position:fixed;top:20px;right:20px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);border-radius:50%;width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:1rem;color:#fff;transition:background .15s;z-index:9991}
+#lb-close:hover{background:rgba(247,37,133,.4)}
+
+/* RECENTLY SEEN */
+#recent-strip{display:none;margin-bottom:20px;animation:fadeUp .3s ease}
+#recent-strip.show{display:block}
+.recent-hdr{font-family:'Orbitron',sans-serif;font-size:.72rem;text-transform:uppercase;
+  letter-spacing:.14em;color:var(--text-3);margin-bottom:10px;display:flex;
+  align-items:center;justify-content:space-between}
+.recent-hdr button{background:transparent;border:none;color:var(--text-3);
+  font-size:.7rem;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:color .15s}
+.recent-hdr button:hover{color:var(--pink)}
+.recent-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.recent-scroll::-webkit-scrollbar{display:none}
+.recent-card{flex-shrink:0;width:110px;cursor:pointer;border-radius:var(--r);
+  overflow:hidden;border:1px solid var(--border);background:var(--bg-card);
+  transition:transform .2s,border-color .2s}
+.recent-card:hover{transform:translateY(-2px);border-color:var(--cyan)}
+.recent-card-img{width:110px;height:62px;object-fit:cover;background:var(--bg-deep);display:block}
+.recent-card-img-placeholder{width:110px;height:62px;background:var(--bg-deep);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.recent-card-name{padding:5px 7px;font-size:.7rem;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-2)}
 
 /* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
@@ -462,6 +519,7 @@ footer a{color:var(--cyan);text-decoration:none}
     <button class="nav-btn" data-page="favs" onclick="showPage('favs',this)">❤️ <span>Favoriten</span>
       <span class="nav-badge" id="fav-badge" style="display:none">0</span>
     </button>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Hell/Dunkel wechseln">🌙</button>
   </div>
 </div>
 
@@ -512,6 +570,14 @@ footer a{color:var(--cyan);text-decoration:none}
       <div class="csearch-hint" id="csearch-hint"></div>
     </div>
   </section>
+  <!-- Recently seen -->
+  <div id="recent-strip">
+    <div class="recent-hdr">
+      <span>🕐 Zuletzt gesehen</span>
+      <button onclick="clearRecent()">✕ Löschen</button>
+    </div>
+    <div class="recent-scroll" id="recent-scroll"></div>
+  </div>
   <div id="history-bar">
     <span class="hist-lbl">🕓 Zuletzt:</span>
     <div id="hist-chips"></div>
@@ -608,7 +674,13 @@ footer a{color:var(--cyan);text-decoration:none}
 </div>
 
 <!-- Lightbox & Toast -->
-<div id="lightbox"><img id="lb-img" src="" alt=""/></div>
+<div id="lightbox">
+  <button id="lb-close" onclick="closeLB()">✕</button>
+  <img id="lb-img" src="" alt="" style="display:none"/>
+  <div id="lb-video-wrap" style="display:none">
+    <iframe id="lb-iframe" src="" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -731,11 +803,15 @@ function init(){
   });
   ci.addEventListener("keydown",e=>{if(e.key==="Enter")doContentSearch();});
   document.getElementById("upd-btn").addEventListener("click",updateDB);
-  document.getElementById("lightbox").addEventListener("click",()=>document.getElementById("lightbox").classList.remove("show"));
+  document.getElementById("lightbox").addEventListener("click",e=>{
+    if(e.target===document.getElementById("lightbox"))closeLB();
+  });
 
   loadDB();
   renderHistory();
+  renderRecentStrip();
   updateFavBadge();
+  initTheme();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -822,6 +898,7 @@ function selectGame(g){
   hideSug();
   loadGameBanner(g.slug||g.name,g);
   unlockContentSearch(g.name);
+  addRecent({name:g.name, slug:g.slug||"", bg:g.bg||""});
 }
 function navSug(d){
   const box=document.getElementById("suggestions");
@@ -846,6 +923,7 @@ async function loadGameBanner(slugOrName){
     if(!r.ok)throw new Error();
     const g=await r.json();
     S.gameData=g;S.gameSlug=g.slug;
+    addRecent({name:g.name, slug:g.slug, bg:g.background_image||""});
     const isFav=FAV_GAMES.some(f=>f.slug===g.slug);
     const plats=(g.platforms||[]).map(p=>p.platform.name).slice(0,5).join(", ");
     const genres=(g.genres||[]).map(x=>x.name).join(", ");
@@ -1191,12 +1269,12 @@ async function loadYT(suffix){
           const isFav=FAV_RESULTS.some(f=>f.id===vid);
           return `
           <div class="vid-card" style="animation-delay:${i*55}ms;--cc:${cat.color}">
-            <div class="vid-thumb-wrap" onclick="window.open('https://www.youtube.com/watch?v=${vid}','_blank')">
+            <div class="vid-thumb-wrap" onclick="openVideo('${vid}','${esc(sn.title).replace(/'/g,"\\'")}')">
               <img class="vid-thumb" src="${thumb}" alt="" loading="lazy"/>
               <div class="vid-play"><div class="play-ico">▶</div></div>
             </div>
             <div class="vid-info">
-              <div class="vid-text" onclick="window.open('https://www.youtube.com/watch?v=${vid}','_blank')" style="cursor:pointer">
+              <div class="vid-text" onclick="openVideo('${vid}','${esc(sn.title).replace(/'/g,"\\'")}')\" style="cursor:pointer">
                 <div class="vid-title">${esc(sn.title)}</div>
                 <div class="vid-meta">
                   <span class="vid-ch">${esc(sn.channelTitle)}</span>
@@ -1878,7 +1956,99 @@ function openExternal(url) {
 }
 const debounce=(fn,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
 function fmtDate(iso){try{return new Date(iso).toLocaleDateString("de-DE",{year:"numeric",month:"short"});}catch{return "";}}
-function openLB(src){document.getElementById("lb-img").src=src;document.getElementById("lightbox").classList.add("show");}
+// ═══════════════════════════════════════════════════════
+// LIGHTBOX – images + YouTube video player
+// ═══════════════════════════════════════════════════════
+function openLB(src){
+  const lb=document.getElementById("lightbox");
+  document.getElementById("lb-img").src=src;
+  document.getElementById("lb-img").style.display="block";
+  document.getElementById("lb-video-wrap").style.display="none";
+  document.getElementById("lb-iframe").src="";
+  lb.classList.add("show");
+}
+
+function openVideo(videoId, title){
+  const lb=document.getElementById("lightbox");
+  document.getElementById("lb-img").style.display="none";
+  document.getElementById("lb-img").src="";
+  document.getElementById("lb-video-wrap").style.display="block";
+  // autoplay=1, rel=0 hides related from other channels
+  document.getElementById("lb-iframe").src=
+    `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+  lb.classList.add("show");
+}
+
+function closeLB(){
+  document.getElementById("lightbox").classList.remove("show");
+  document.getElementById("lb-iframe").src=""; // stop video
+  document.getElementById("lb-img").src="";
+  document.getElementById("lb-img").style.display="none";
+  document.getElementById("lb-video-wrap").style.display="none";
+}
+
+// ═══════════════════════════════════════════════════════
+// RECENTLY SEEN
+// ═══════════════════════════════════════════════════════
+const RECENT_KEY = "gf_recent";
+let RECENT = loadStore(RECENT_KEY, []); // [{name,slug,bg}]
+
+function addRecent(game){
+  RECENT = RECENT.filter(r=>r.slug!==game.slug && r.name!==game.name);
+  RECENT.unshift(game);
+  if(RECENT.length>5) RECENT=RECENT.slice(0,5);
+  saveStore(RECENT_KEY, RECENT);
+  renderRecentStrip();
+}
+
+function clearRecent(){
+  RECENT=[];saveStore(RECENT_KEY,[]);renderRecentStrip();
+}
+
+function renderRecentStrip(){
+  const strip=document.getElementById("recent-strip");
+  const scroll=document.getElementById("recent-scroll");
+  if(!strip||!scroll) return;
+  if(!RECENT.length){ strip.classList.remove("show"); return; }
+  strip.classList.add("show");
+  scroll.innerHTML=RECENT.map(g=>`
+    <div class="recent-card" onclick="searchGame('${esc(g.name)}','${g.slug||""}')">
+      ${g.bg
+        ?`<img class="recent-card-img" src="${g.bg}" loading="lazy" alt="${esc(g.name)}" onerror="this.style.display='none'">`
+        :`<div class="recent-card-img-placeholder">🎮</div>`}
+      <div class="recent-card-name">${esc(g.name)}</div>
+    </div>`).join("");
+}
+
+// ═══════════════════════════════════════════════════════
+// THEME TOGGLE
+// ═══════════════════════════════════════════════════════
+const THEME_KEY="gf_theme";
+
+function initTheme(){
+  const saved=localStorage.getItem(THEME_KEY)||"dark";
+  applyTheme(saved,false);
+}
+
+function toggleTheme(){
+  const isLight=document.body.classList.contains("light");
+  applyTheme(isLight?"dark":"light",true);
+}
+
+function applyTheme(theme, save){
+  const body=document.body;
+  const btn=document.getElementById("theme-btn");
+  if(theme==="light"){
+    body.classList.add("light");
+    if(btn) btn.textContent="☀️";
+    if(btn) btn.title="Dunkles Design";
+  }else{
+    body.classList.remove("light");
+    if(btn) btn.textContent="🌙";
+    if(btn) btn.title="Helles Design";
+  }
+  if(save) localStorage.setItem(THEME_KEY,theme);
+}
 
 let toastTimer;
 function showToast(msg){
