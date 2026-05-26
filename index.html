@@ -76,8 +76,14 @@ select.pulse{animation:pulseB .6s ease}
 .inp-row{display:flex;gap:8px;position:relative}
 .inp-wrap{position:relative;flex:1}
 .inp-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none}
+.clear-btn{position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  background:transparent;border:none;color:var(--text-3);font-size:.9rem;cursor:pointer;
+  padding:4px 6px;border-radius:6px;line-height:1;transition:color .15s,background .15s;
+  display:none;z-index:2}
+.clear-btn:hover{color:var(--text-1);background:var(--bg-hover)}
+.clear-btn.visible{display:block}
 #game-input{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
-  color:var(--text-1);padding:12px 13px 12px 40px;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;
+  color:var(--text-1);padding:12px 36px 12px 40px;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600;
   transition:border-color .2s,box-shadow .2s}
 #game-input:focus{outline:none;border-color:var(--cyan);box-shadow:var(--glow-cyan)}
 #game-input::placeholder{color:var(--text-3);font-weight:400}
@@ -112,7 +118,7 @@ select.pulse{animation:pulseB .6s ease}
 .csearch-inp-wrap{position:relative;flex:1}
 .csearch-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none;font-size:.9rem}
 #content-input{width:100%;background:var(--bg-deep);border:1px solid var(--border-lit);
-  border-radius:var(--r);color:var(--text-1);padding:11px 13px 11px 38px;
+  border-radius:var(--r);color:var(--text-1);padding:11px 36px 11px 38px;
   font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;
   transition:border-color .2s,box-shadow .2s}
 #content-input:focus{outline:none;border-color:var(--purple);
@@ -479,6 +485,7 @@ footer a{color:var(--cyan);text-decoration:none}
         <div class="inp-wrap">
           <span class="inp-icon">🕹️</span>
           <input id="game-input" type="text" placeholder="Spieltitel eingeben…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+          <button class="clear-btn" id="game-clear-btn" onclick="clearGameInput()" title="Eingabe löschen">✕</button>
         </div>
         <button id="search-btn">SUCHEN</button>
       </div>
@@ -497,6 +504,7 @@ footer a{color:var(--cyan);text-decoration:none}
           <input id="content-input" type="text"
             placeholder="Optional: z. B. beste Rüstung am Anfang…"
             autocomplete="off" autocorrect="off" spellcheck="false" disabled/>
+          <button class="clear-btn" id="content-clear-btn" onclick="clearContentInput()" title="Eingabe löschen">✕</button>
         </div>
         <button id="csearch-btn">🔎 VERFEINERN</button>
       </div>
@@ -596,7 +604,7 @@ footer a{color:var(--cyan);text-decoration:none}
   <button id="upd-btn">🔄 Datenbank aktualisieren</button>
 </section>
 
-<footer>GameFinder &copy; 2025 · <span id="version-display" style="color:var(--purple);font-family:'Orbitron',sans-serif;font-size:.7rem"></span> · <a href="https://rawg.io" target="_blank">RAWG.io</a> · <a href="https://developers.google.com/youtube" target="_blank">YouTube API</a></footer>
+<footer>GameFinder &copy; <span id="footer-date">Mai 2026</span> · <span id="version-display" style="color:var(--purple);font-family:'Orbitron',sans-serif;font-size:.7rem"></span> · Entwickelt von <span style="color:var(--cyan)">René Prause</span> · <a href="https://rawg.io" target="_blank">RAWG.io</a> · <a href="https://developers.google.com/youtube" target="_blank">YouTube API</a></footer>
 </div>
 
 <!-- Lightbox & Toast -->
@@ -702,6 +710,9 @@ function init(){
   });
   const gi=document.getElementById("game-input");
   gi.addEventListener("input",debounce(onInput,280));
+  gi.addEventListener("input",()=>{
+    document.getElementById("game-clear-btn")?.classList.toggle("visible",gi.value.length>0);
+  });
   gi.addEventListener("keydown",e=>{
     if(e.key==="Enter"){hideSug();doSearch();}
     if(e.key==="Escape")hideSug();
@@ -713,8 +724,12 @@ function init(){
   });
   document.getElementById("search-btn").addEventListener("click",doSearch);
   document.getElementById("csearch-btn").addEventListener("click",doContentSearch);
-  document.getElementById("content-input").addEventListener("input",debounce(onContentInput,200));
-  document.getElementById("content-input").addEventListener("keydown",e=>{if(e.key==="Enter")doContentSearch();});
+  const ci=document.getElementById("content-input");
+  ci.addEventListener("input",debounce(onContentInput,200));
+  ci.addEventListener("input",()=>{
+    document.getElementById("content-clear-btn")?.classList.toggle("visible",ci.value.length>0);
+  });
+  ci.addEventListener("keydown",e=>{if(e.key==="Enter")doContentSearch();});
   document.getElementById("upd-btn").addEventListener("click",updateDB);
   document.getElementById("lightbox").addEventListener("click",()=>document.getElementById("lightbox").classList.remove("show"));
 
@@ -862,7 +877,23 @@ async function loadGameBanner(slugOrName){
       </div>
       ${shots.length?`<div class="screens-strip">${shots.map(s=>`<img class="screen-thumb" src="${s.image}" loading="lazy" onclick="openLB('${s.image}')">`).join("")}</div>`:""}`;
   }catch{
-    b.innerHTML=`<div class="banner-bg"><div class="banner-ov"><div class="banner-info"><div class="banner-title">${esc(slugOrName)}</div></div></div></div>`;
+    const name = slugOrName;
+    const isFav = FAV_GAMES.some(f=>f.name===name||f.slug===name);
+    b.innerHTML=`
+      <div class="banner-bg">
+        <div class="banner-ov">
+          <div class="banner-info">
+            <div class="banner-title-row">
+              <div class="banner-title">${esc(name)}</div>
+              <button class="fav-game-btn${isFav?" on":""}" id="fav-game-btn" onclick="toggleFavGame()"
+                title="${isFav?"Von Favoriten entfernen":"Zu Favoriten hinzufügen"}">
+                ${isFav?"❤️":"🤍"}
+              </button>
+            </div>
+            <div class="chips"><span class="chip" style="color:var(--orange)">⚠️ Keine RAWG-Daten gefunden</span></div>
+          </div>
+        </div>
+      </div>`;
   }
 }
 
@@ -935,7 +966,30 @@ function detectCategory(tokens){
   return best[0][1]>0 ? best[0][0] : "tips"; // fallback to tips
 }
 
-function unlockContentSearch(gameName){
+function clearGameInput(){
+  const gi=document.getElementById("game-input");
+  gi.value="";
+  gi.focus();
+  document.getElementById("game-clear-btn")?.classList.remove("visible");
+  hideSug();
+  // Reset state
+  S.game=null;S.gameSlug=null;S.gameData=null;
+  document.getElementById("game-banner").classList.remove("show");
+  document.getElementById("results").classList.remove("show");
+  document.getElementById("content-search-wrap").classList.remove("show");
+  document.getElementById("content-input").disabled=true;
+  document.getElementById("content-input").value="";
+  document.getElementById("content-clear-btn")?.classList.remove("visible");
+}
+
+function clearContentInput(){
+  const ci=document.getElementById("content-input");
+  ci.value="";
+  ci.focus();
+  document.getElementById("content-clear-btn")?.classList.remove("visible");
+  document.getElementById("token-preview").innerHTML="";
+  document.getElementById("csearch-hint").textContent="Optional – verfeinert die Suche. Leer lassen für normale Suche.";
+}
   const wrap = document.getElementById("content-search-wrap");
   const inp  = document.getElementById("content-input");
   const tag  = document.getElementById("csearch-game-tag");
@@ -1372,22 +1426,30 @@ function searchGame(name,slug){
 // FAVOURITES – GAMES
 // ═══════════════════════════════════════════════════════
 function toggleFavGame(){
-  if(!S.gameData)return;
-  const g={slug:S.gameData.slug,name:S.gameData.name,
-    bg:S.gameData.background_image||"",
-    rating:S.gameData.rating||0,released:S.gameData.released||""};
-  const idx=FAV_GAMES.findIndex(f=>f.slug===g.slug);
-  const btn=document.getElementById("fav-game-btn");
+  // Build game object from whatever data we have – never block on S.gameData being null
+  const name = S.gameData?.name || S.game || document.getElementById("game-input").value.trim();
+  if(!name){ showToast("⚠️ Kein Spiel geladen"); return; }
+
+  const g = {
+    slug:     S.gameData?.slug     || S.gameSlug || name.toLowerCase().replace(/[^a-z0-9]+/g,"-"),
+    name:     name,
+    bg:       S.gameData?.background_image || "",
+    rating:   S.gameData?.rating   || 0,
+    released: S.gameData?.released || ""
+  };
+
+  const btn = document.getElementById("fav-game-btn");
+  const idx = FAV_GAMES.findIndex(f=>f.slug===g.slug || f.name===g.name);
   if(idx>=0){
     FAV_GAMES.splice(idx,1);
-    if(btn){btn.textContent="🤍";btn.classList.remove("on");}
+    if(btn){ btn.textContent="🤍"; btn.classList.remove("on"); }
     showToast("💔 Aus Favoriten entfernt");
   }else{
     FAV_GAMES.unshift(g);
-    if(btn){btn.textContent="❤️";btn.classList.add("on");}
+    if(btn){ btn.textContent="❤️"; btn.classList.add("on"); }
     showToast("❤️ Zu Favoriten hinzugefügt!");
   }
-  saveStore(SK.favGames,FAV_GAMES);
+  saveStore(SK.favGames, FAV_GAMES);
   updateFavBadge();
 }
 
@@ -1749,29 +1811,48 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // ═══════════════════════════════════════════════════════
 // VERSION SYSTEM
 // ═══════════════════════════════════════════════════════
-const VERSION_KEY = "gf_version";
+const VERSION_KEY  = "gf_version";
+const DATE_KEY     = "gf_build_date"; // stores "YYYY-MM" of last build
+
+const MONTHS_DE = ["Januar","Februar","März","April","Mai","Juni",
+                   "Juli","August","September","Oktober","November","Dezember"];
+
 function getNextVersion(current) {
   const [major, minor] = current.split(".").map(Number);
   if (minor >= 9) return `${major + 1}.0`;
   return `${major}.${minor + 1}`;
 }
+
 function initVersion() {
-  // Stored version = last saved build version
-  const stored = localStorage.getItem(VERSION_KEY);
-  // Current hard-coded build baseline
-  const BUILD_BASE = "1.2";
+  const now        = new Date();
+  const nowKey     = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+  const monthLabel = MONTHS_DE[now.getMonth()];
+  const yearLabel  = now.getFullYear();
+
+  const storedVer  = localStorage.getItem(VERSION_KEY);
+  const storedDate = localStorage.getItem(DATE_KEY);
+
+  const BUILD_BASE = "1.3";
   let display;
-  if (!stored) {
-    // First ever run – set to baseline
+
+  if (!storedVer) {
+    // First ever run
     display = BUILD_BASE;
-    localStorage.setItem(VERSION_KEY, BUILD_BASE);
   } else {
-    // Every page load = new build → bump
-    display = getNextVersion(stored);
-    localStorage.setItem(VERSION_KEY, display);
+    // Bump version on every page load
+    display = getNextVersion(storedVer);
   }
-  const el = document.getElementById("version-display");
-  if (el) el.textContent = `v${display}`;
+
+  localStorage.setItem(VERSION_KEY,  display);
+  localStorage.setItem(DATE_KEY,     nowKey);
+
+  // Update version display
+  const vEl = document.getElementById("version-display");
+  if (vEl) vEl.textContent = `v${display}`;
+
+  // Update footer date – always reflects current month + year
+  const dEl = document.getElementById("footer-date");
+  if (dEl) dEl.textContent = `${monthLabel} ${yearLabel}`;
 }
 
 // ═══════════════════════════════════════════════════════
