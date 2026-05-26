@@ -1680,6 +1680,12 @@ function updateFavBadge(){
 const NEWS_CACHE_KEY = "gf_news_cache";
 const NEWS_CACHE_TS  = "gf_news_ts";
 let newsCache = loadStore(NEWS_CACHE_KEY, {});
+// Wipe old cache that has no articles (from previous broken version)
+if (Object.keys(newsCache).length && !Object.values(newsCache).some(n=>Array.isArray(n.articles))) {
+  newsCache = {};
+  localStorage.removeItem(NEWS_CACHE_KEY);
+  localStorage.removeItem(NEWS_CACHE_TS);
+}
 
 async function loadNewsPage(forceRefresh) {
   const list = document.getElementById("news-list");
@@ -1702,7 +1708,9 @@ async function loadNewsPage(forceRefresh) {
 
   const cachedTs = localStorage.getItem(NEWS_CACHE_TS);
   const cacheAge = cachedTs ? (Date.now() - new Date(cachedTs).getTime()) : Infinity;
-  const useCache = !forceRefresh && cacheAge < 30 * 60 * 1000; // 30 min cache
+  // Invalidate cache if: forced, too old, or cached entries have no articles array
+  const cacheHasArticles = Object.values(newsCache).some(n=>Array.isArray(n.articles));
+  const useCache = !forceRefresh && cacheAge < 30*60*1000 && cacheHasArticles;
 
   if (useCache && Object.keys(newsCache).length) {
     tsEl.textContent = `Stand: ${new Date(cachedTs).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr`;
@@ -1777,76 +1785,39 @@ async function fetchNewsForGame(g) {
   try {
     const query  = encodeURIComponent(`"${g.name}" game`);
     const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=de&gl=DE&ceid=DE:de`;
+    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
 
-    // Try proxies in order until one works
-    const proxies = [
-      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`,
-      `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`,
-      `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`
-    ];
+    const r = await fetch(apiUrl, {signal: AbortSignal.timeout(8000)});
+    if (r.ok) {
+      const d = await r.json();
+      if (d.status === "ok" && d.items?.length) {
+        const cutoff3mMs = cutoff3m.getTime();
+        articles = d.items.map(item => {
+          // pubDate from rss2json: "2026-05-03 07:00:00"
+          const pub     = new Date((item.pubDate||"").replace(" ","T")+"Z");
+          const ageDays = isNaN(pub) ? 999 : Math.floor((Date.now()-pub.getTime())/86400000);
 
-    let raw = null;
-    let useXML = false;
+          // Source: extract publisher from title "Article title - Publisher Name"
+          const rawTitle = (item.title||"").replace(/<[^>]+>/g,"").trim();
+          const dashIdx  = rawTitle.lastIndexOf(" - ");
+          const title    = dashIdx>0 ? rawTitle.slice(0,dashIdx).trim() : rawTitle;
+          const source   = dashIdx>0 ? rawTitle.slice(dashIdx+3).trim() : extractDomain(item.link||"");
 
-    for (const proxy of proxies) {
-      try {
-        const r = await fetch(proxy, {signal: AbortSignal.timeout(6000)});
-        if (!r.ok) continue;
-        const text = await r.text();
-        // rss2json returns JSON, others return raw XML wrapped in JSON or plain XML
-        if (proxy.includes("rss2json")) {
-          const d = JSON.parse(text);
-          if (d.status === "ok" && d.items?.length) {
-            raw = d.items; useXML = false; break;
-          }
-        } else if (proxy.includes("allorigins")) {
-          const d = JSON.parse(text);
-          raw = d.contents; useXML = true; break;
-        } else {
-          // corsproxy returns raw XML
-          raw = text; useXML = true; break;
-        }
-      } catch { continue; }
-    }
+          // URL: Google wraps links – use as-is, they redirect correctly
+          const url = item.link || item.guid || "";
 
-    const cutoff3mMs = cutoff3m.getTime();
+          const snippet = (item.description||item.content||"")
+            .replace(/<[^>]+>/g,"").trim().slice(0,200);
 
-    if (raw && !useXML) {
-      // Already parsed JSON items from rss2json
-      articles = raw.map(item => {
-        const pub     = new Date(item.pubDate || item.published || "");
-        const ageDays = Math.floor((Date.now() - pub.getTime()) / 86400000);
-        return {
-          title:    (item.title||"").replace(/<[^>]+>/g,"").trim(),
-          url:      item.link || item.url || "",
-          source:   item.author || extractDomain(item.link||""),
-          snippet:  (item.description||item.content||"").replace(/<[^>]+>/g,"").trim().slice(0,200),
-          pubDate:  pub, ageDays,
-          isFresh7:  ageDays <= 7,
-          isFresh3m: pub.getTime() >= cutoff3mMs,
-        };
-      }).filter(a => a.isFresh3m && a.title && a.url);
-
-    } else if (raw && useXML) {
-      // Parse XML string manually
-      const parser = new DOMParser();
-      const xml    = parser.parseFromString(raw, "text/xml");
-      const items  = [...xml.querySelectorAll("item")];
-      articles = items.map(item => {
-        const title   = item.querySelector("title")?.textContent?.replace(/<[^>]+>/g,"").trim() || "";
-        const link    = item.querySelector("link")?.textContent?.trim()
-                     || item.querySelector("guid")?.textContent?.trim() || "";
-        const desc    = item.querySelector("description")?.textContent?.replace(/<[^>]+>/g,"").trim().slice(0,200) || "";
-        const pubStr  = item.querySelector("pubDate")?.textContent?.trim() || "";
-        const pub     = pubStr ? new Date(pubStr) : new Date(0);
-        const ageDays = Math.floor((Date.now() - pub.getTime()) / 86400000);
-        const src     = item.querySelector("source")?.textContent?.trim() || extractDomain(link);
-        return {
-          title, url: link, source: src, snippet: desc, pubDate: pub, ageDays,
-          isFresh7:  ageDays <= 7,
-          isFresh3m: pub.getTime() >= cutoff3mMs,
-        };
-      }).filter(a => a.isFresh3m && a.title && a.url);
+          return {
+            title, url, source, snippet,
+            pubDate:  pub,
+            ageDays:  isNaN(pub) ? 999 : ageDays,
+            isFresh7:  ageDays <= 7,
+            isFresh3m: !isNaN(pub) && pub.getTime() >= cutoff3mMs,
+          };
+        }).filter(a => a.isFresh3m && a.title && a.url);
+      }
     }
   } catch(e) { console.warn("News fetch failed:", e.message); }
 
