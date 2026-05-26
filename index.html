@@ -479,31 +479,43 @@ footer a{color:var(--cyan);text-decoration:none}
 .recent-card-name{padding:5px 7px;font-size:.7rem;font-weight:700;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-2)}
 
-/* NEWS ARTICLES */
+/* NEWS INNER TABS */
+.news-inner-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 12px}
+.news-inner-tab{padding:6px 13px;background:var(--bg-deep);border:1px solid var(--border-lit);
+  border-radius:20px;color:var(--text-2);font-family:'Rajdhani',sans-serif;font-size:.82rem;
+  font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.news-inner-tab:hover{border-color:var(--ntc);color:var(--ntc)}
+.news-inner-tab.nit-on{border-color:var(--ntc);color:var(--ntc);background:rgba(0,245,212,.06)}
+
+/* NEWS SOURCE PANELS */
+.news-src-panel{display:none}
+.news-src-panel.nsp-on{display:block}
+.news-src-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:9px;margin-bottom:12px}
+
+/* NEWS SOURCE CARDS */
+.news-src-card{display:flex;align-items:center;gap:11px;padding:12px 14px;
+  background:var(--bg-deep);border:1px solid var(--border-lit);border-radius:var(--r);
+  text-decoration:none;color:var(--text-1);transition:all .2s;position:relative;overflow:hidden}
+.news-src-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--nsc);opacity:.6;transition:opacity .2s}
+.news-src-card:hover{border-color:var(--nsc);transform:translateX(3px)}
+.news-src-card:hover::before{opacity:1}
+.nsc-icon{font-size:1.5rem;flex-shrink:0;width:32px;text-align:center}
+.nsc-info{flex:1;min-width:0}
+.nsc-name{font-weight:700;font-size:.88rem;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nsc-desc{font-size:.7rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.nsc-arrow{color:var(--nsc);opacity:.6;font-size:.85rem;flex-shrink:0}
+
+/* GOOGLE PREVIEW LINK */
+.news-google-preview{padding:10px 13px;background:rgba(0,245,212,.04);
+  border:1px solid rgba(0,245,212,.15);border-radius:var(--r)}
+.ngp-label{font-size:.68rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.ngp-link{display:block;color:var(--cyan);text-decoration:none;font-size:.82rem;font-weight:600;
+  transition:opacity .2s}
+.ngp-link:hover{opacity:.7}
+
+/* NEWS ARTICLES (keep for compat) */
 .news-articles-list{display:flex;flex-direction:column;gap:8px}
-.news-article{background:var(--bg-deep);border:1px solid var(--border);
-  border-radius:var(--r);overflow:hidden;transition:border-color .2s}
-.news-article:hover{border-color:var(--cyan)}
-.news-article-inner{padding:11px 13px;text-decoration:none;color:var(--text-1);display:block}
-.news-article-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
-.news-age-badge{padding:2px 8px;border-radius:20px;font-size:.63rem;
-  font-family:'JetBrains Mono',monospace;white-space:nowrap;font-weight:700}
-.news-age-badge.hot{background:rgba(247,37,133,.15);border:1px solid var(--pink);color:var(--pink)}
-.news-age-badge.fresh{background:rgba(0,245,212,.1);border:1px solid var(--cyan);color:var(--cyan)}
-.news-age-badge.old{background:rgba(255,255,255,.04);border:1px solid var(--border-lit);color:var(--text-3)}
-.news-article-source{font-size:.68rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
-.news-article-title{font-weight:700;font-size:.88rem;line-height:1.4;margin-bottom:4px}
-.news-article-snippet{font-size:.76rem;color:var(--text-2);line-height:1.45;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.news-article-date{font-size:.68rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;
-  padding:5px 13px;border-top:1px solid var(--border)}
-.news-older-toggle{display:flex;align-items:center;justify-content:space-between;
-  gap:8px;padding:9px 13px;background:var(--bg-hover);border:1px solid var(--border-lit);
-  border-radius:var(--r);cursor:pointer;font-size:.8rem;color:var(--text-2);
-  transition:all .15s;margin-top:4px;font-family:'JetBrains Mono',monospace;width:100%}
-.news-older-toggle:hover{border-color:var(--cyan);color:var(--cyan)}
-.news-older-list{display:none;flex-direction:column;gap:8px;margin-top:8px}
-.news-older-list.open{display:flex}
 .news-no-articles{font-size:.8rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;
   padding:10px 0;text-align:center}
 
@@ -1678,19 +1690,46 @@ function updateFavBadge(){
 // NEWS PAGE
 // ═══════════════════════════════════════════════════════
 const NEWS_CACHE_KEY = "gf_news_cache";
-const NEWS_CACHE_TS  = "gf_news_ts";
 let newsCache = loadStore(NEWS_CACHE_KEY, {});
-// Wipe old cache that has no articles (from previous broken version)
-if (Object.keys(newsCache).length && !Object.values(newsCache).some(n=>Array.isArray(n.articles))) {
-  newsCache = {};
-  localStorage.removeItem(NEWS_CACHE_KEY);
-  localStorage.removeItem(NEWS_CACHE_TS);
-}
 
-async function loadNewsPage(forceRefresh) {
+// ── News source definitions per category ──────────────
+const NEWS_SOURCES = {
+  news: [
+    { name:"Google News",    icon:"🔍", color:"#4285f4", url: g=>`https://news.google.com/search?q=${encodeURIComponent(g)}&hl=de`,          desc:"Aktuelle Schlagzeilen" },
+    { name:"Gamestar.de",    icon:"⭐", color:"#ff6b35", url: g=>`https://www.gamestar.de/suche/?keywords=${encodeURIComponent(g)}`,          desc:"Deutsches Gaming-Magazin" },
+    { name:"GamePro.de",     icon:"🕹️", color:"#f72585", url: g=>`https://www.gamepro.de/suche/?keywords=${encodeURIComponent(g)}`,           desc:"News & Tests" },
+    { name:"IGN",            icon:"🎮", color:"#e11d48", url: g=>`https://www.ign.com/search?q=${encodeURIComponent(g)}`,                     desc:"International Gaming News" },
+    { name:"PC Games.de",    icon:"💻", color:"#7c3aed", url: g=>`https://www.pcgames.de/suche/?keywords=${encodeURIComponent(g)}`,           desc:"PC-Fokus News" },
+    { name:"4Players.de",    icon:"👥", color:"#0891b2", url: g=>`https://www.4players.de/4players.php/dispbrowse/uebersicht-0/search-${encodeURIComponent(g)}.html`, desc:"Community & News" },
+  ],
+  updates: [
+    { name:"Google – Patches",   icon:"🔧", color:"#06ffa5", url: g=>`https://www.google.de/search?q=${encodeURIComponent(g+' patch update 2026')}`,   desc:"Patches & Updates" },
+    { name:"Google – DLC",       icon:"📦", color:"#ffd60a", url: g=>`https://www.google.de/search?q=${encodeURIComponent(g+' DLC Erweiterung 2026')}`, desc:"DLC & Erweiterungen" },
+    { name:"Steam",              icon:"🚂", color:"#1b2838", url: g=>`https://store.steampowered.com/search/?term=${encodeURIComponent(g)}`,            desc:"Steam Store & Updates" },
+    { name:"Metacritic",         icon:"🏆", color:"#ff6b35", url: g=>`https://www.metacritic.com/search/${encodeURIComponent(g)}/`,                     desc:"Ratings & Updates" },
+  ],
+  videos: [
+    { name:"YouTube – News",     icon:"▶️", color:"#ff0000", url: g=>`https://www.youtube.com/results?search_query=${encodeURIComponent(g+' news 2026')}`,          desc:"Aktuelle Video-News" },
+    { name:"YouTube – Preview",  icon:"🎬", color:"#ff0000", url: g=>`https://www.youtube.com/results?search_query=${encodeURIComponent(g+' trailer preview')}`,    desc:"Trailer & Previews" },
+    { name:"YouTube – Review",   icon:"📺", color:"#ff0000", url: g=>`https://www.youtube.com/results?search_query=${encodeURIComponent(g+' review test deutsch')}`, desc:"Reviews auf Deutsch" },
+    { name:"Twitch",             icon:"📡", color:"#9146ff", url: g=>`https://www.twitch.tv/search?term=${encodeURIComponent(g)}`,                                   desc:"Live Streams" },
+  ],
+  social: [
+    { name:"Reddit",             icon:"🤖", color:"#ff4500", url: g=>`https://www.reddit.com/search/?q=${encodeURIComponent(g)}&sort=new`,              desc:"Community Diskussionen" },
+    { name:"X / Twitter",        icon:"🐦", color:"#1da1f2", url: g=>`https://twitter.com/search?q=${encodeURIComponent(g)}&f=live`,                    desc:"Aktuelle Tweets" },
+  ]
+};
+
+const NEWS_TABS = [
+  { id:"news",    label:"📰 News",          color:"#00f5d4" },
+  { id:"updates", label:"🔧 Updates & DLC",  color:"#ffd60a" },
+  { id:"videos",  label:"▶️ Videos",          color:"#ff6b35" },
+  { id:"social",  label:"💬 Community",       color:"#f72585" },
+];
+
+function loadNewsPage(forceRefresh) {
   const list = document.getElementById("news-list");
   const tsEl = document.getElementById("news-ts");
-  const btn  = document.getElementById("news-refresh-btn");
 
   if (!FAV_GAMES.length) {
     list.innerHTML = `
@@ -1698,7 +1737,7 @@ async function loadNewsPage(forceRefresh) {
         <div class="empty-ico">📰</div>
         <div class="empty-txt">
           Noch keine Favoriten gespeichert.<br>
-          Speichere Spiele über ❤️ im Spielbanner oder in den<br>
+          Speichere Spiele über ❤️ im Spielbanner oder in den
           <a href="#" onclick="showPage('charts',document.querySelector('[data-page=charts]'))">🏆 Charts</a> &
           <a href="#" onclick="showPage('new',document.querySelector('[data-page=new]'))">🆕 Neuerscheinungen</a>.
         </div>
@@ -1706,207 +1745,26 @@ async function loadNewsPage(forceRefresh) {
     return;
   }
 
-  const cachedTs = localStorage.getItem(NEWS_CACHE_TS);
-  const cacheAge = cachedTs ? (Date.now()-new Date(cachedTs).getTime()) : Infinity;
-  const cacheHasArticles = Object.values(newsCache).some(n=>Array.isArray(n.articles)&&n.articles.length>0);
-  const useCache = !forceRefresh && cacheAge < 30*60*1000 && cacheHasArticles;
-
-  if (useCache) {
-    tsEl.textContent = `Stand: ${new Date(cachedTs).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr (gecacht)`;
-    renderNewsList(list);
-    return;
-  }
-
-  // Show skeleton
-  list.innerHTML = FAV_GAMES.map(g=>`
-    <div class="news-card in">
-      <div class="news-card-hdr">
-        <div class="news-card-cover-placeholder">🎮</div>
-        <div class="news-card-meta">
-          <div class="news-card-title" style="color:var(--text-3)">${esc(g.name)}</div>
-          <div class="news-card-sub"><span>⏳ Lade…</span></div>
-        </div>
-      </div>
-    </div>`).join("");
-
-  if(btn){btn.classList.add("spinning");btn.disabled=true;}
-
-  // Fetch sequentially to avoid rate limits
-  for(let i=0;i<FAV_GAMES.length;i++){
-    const g = FAV_GAMES[i];
-    try { newsCache[g.slug||g.name] = await fetchNewsForGame(g); }
-    catch(e){ newsCache[g.slug||g.name] = {screenshots:[],dlc:[],articles:[],error:e.message}; }
-  }
-
-  saveStore(NEWS_CACHE_KEY, newsCache);
-  localStorage.setItem(NEWS_CACHE_TS, new Date().toISOString());
-  tsEl.textContent = `Stand: ${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr`;
-
-  if(btn){btn.classList.remove("spinning");btn.disabled=false;}
-  renderNewsList(list);
-
-  // badge
-  const totalNew = Object.values(newsCache).reduce((s,n)=>s+(n.articles?.length>0?1:0),0);
-  const nb=document.getElementById("news-badge");
-  if(nb){nb.style.display=totalNew>0?"":"none";}
+  tsEl.textContent = `${FAV_GAMES.length} Spiel${FAV_GAMES.length>1?"e":""} · Klicke eine Karte um News zu öffnen`;
+  list.innerHTML = FAV_GAMES.map((g,i) => renderNewsCard(g,i)).join("");
+  document.querySelectorAll(".news-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*60));
+  document.getElementById("news-badge").style.display="none";
 }
 
-async function fetchNewsForGame(g) {
-  const slug     = g.slug || "";
-  const gameName = g.name || slug;
-
-  // ── 1. Screenshots via RAWG ──────────────────────────
-  let screenshots = [];
-  if (slug) {
-    try {
-      const r = await fetch(`${CFG.rawg}/games/${slug}/screenshots?key=${CFG.rawgKey}&page_size=6`);
-      if (r.ok) { const d=await r.json(); screenshots=(d.results||[]).map(s=>s.image); }
-    } catch{}
-  }
-
-  // ── 2. DLC via RAWG ──────────────────────────────────
-  const cutoff3m = new Date(); cutoff3m.setMonth(cutoff3m.getMonth()-3);
-  let dlc = [];
-  if (slug) {
-    try {
-      const r = await fetch(`${CFG.rawg}/games/${slug}/additions?key=${CFG.rawgKey}&page_size=8`);
-      if (r.ok) {
-        const d=await r.json();
-        dlc=(d.results||[]).map(x=>({
-          name:x.name, bg:x.background_image||"",
-          released:x.released||"", rating:x.rating||0,
-          tag:guessDLCTag(x.name),
-          isFresh: x.released ? new Date(x.released)>=cutoff3m : false
-        }));
-      }
-    } catch{}
-  }
-
-  // ── 3. Google News RSS via rss2json ──────────────────
-  let articles = [];
-  try {
-    // Search by game name – more reliable than slug
-    const query  = encodeURIComponent(gameName + " game");
-    const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=de&gl=DE&ceid=DE:de`;
-    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
-
-    console.log(`[GameFinder News] Fetching: ${gameName}`);
-    const r = await fetch(apiUrl, {signal: AbortSignal.timeout(10000)});
-    console.log(`[GameFinder News] Status: ${r.status}`);
-
-    if (r.ok) {
-      const d = await r.json();
-      console.log(`[GameFinder News] rss2json status: ${d.status}, items: ${d.items?.length}`);
-
-      if (d.status === "ok" && d.items?.length) {
-        const cutoff3mMs = cutoff3m.getTime();
-        const now = Date.now();
-
-        articles = d.items.map(item => {
-          // rss2json pubDate: "2026-05-03 07:00:00" → parse carefully
-          const rawDate = (item.pubDate||"").trim();
-          const pub = rawDate
-            ? new Date(rawDate.replace(" ","T")+"Z")
-            : new Date(0);
-          const valid   = !isNaN(pub.getTime()) && pub.getTime() > 0;
-          const ageDays = valid ? Math.floor((now - pub.getTime())/86400000) : 999;
-
-          // Extract publisher from end of title: "Title - Publisher"
-          const rawTitle = (item.title||"").replace(/<[^>]+>/g,"").trim();
-          const dash = rawTitle.lastIndexOf(" - ");
-          const title  = dash>0 ? rawTitle.slice(0,dash).trim() : rawTitle;
-          const source = dash>0 ? rawTitle.slice(dash+3).trim()
-                       : (item.author || extractDomain(item.link||""));
-
-          const url     = item.link || item.guid || "";
-          const snippet = (item.description||item.content||"")
-            .replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim().slice(0,200);
-
-          const isFresh3m = valid && pub.getTime() >= cutoff3mMs;
-          console.log(`  → "${title.slice(0,40)}" | ${rawDate} | ageDays=${ageDays} | fresh=${isFresh3m}`);
-
-          return { title, url, source, snippet, pubDate:pub, ageDays,
-            isFresh7: ageDays<=7, isFresh3m };
-        }).filter(a => a.isFresh3m && a.title && a.url);
-
-        console.log(`[GameFinder News] After filter: ${articles.length} articles`);
-      }
-    }
-  } catch(e) {
-    console.warn(`[GameFinder News] Error for ${gameName}:`, e.message);
-  }
-
-  return { screenshots, dlc, articles, fetchedAt: new Date().toISOString() };
-}
-
-function extractDomain(url) {
-  try { return new URL(url).hostname.replace("www.",""); } catch { return ""; }
-}
-
-function guessDLCTag(name) {
-  const n = name.toLowerCase();
-  if (n.includes("expansion")||n.includes("erweiterung")||n.includes("season pass")) return "expansion";
-  if (n.includes("edition")||n.includes("bundle")||n.includes("complete")||n.includes("goty")) return "edition";
-  return "dlc";
-}
-
-function ageBadge(a) {
-  if (a.ageDays <= 2)  return `<span class="news-age-badge hot">🔥 ${a.ageDays===0?"Heute":a.ageDays+"d"}</span>`;
-  if (a.ageDays <= 7)  return `<span class="news-age-badge hot">⚡ ${a.ageDays}d</span>`;
-  if (a.isFresh3m)     return `<span class="news-age-badge fresh">🆕 ${Math.ceil(a.ageDays/7)}w</span>`;
-  return                      `<span class="news-age-badge old">${Math.ceil(a.ageDays/30)}mo</span>`;
-}
-
-function articleHTML(a) {
-  // strip HTML from snippet
-  const snippet = a.snippet.length > 10 ? a.snippet : "";
-  const dateStr = a.pubDate instanceof Date && !isNaN(a.pubDate)
-    ? a.pubDate.toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"})
-    : "";
+function renderNewsCard(g, i) {
+  const gName = g.name;
   return `
-    <div class="news-article">
-      <a class="news-article-inner" href="${a.url}" target="_blank" rel="noopener">
-        <div class="news-article-meta">
-          ${ageBadge(a)}
-          <span class="news-article-source">${esc(a.source)}</span>
-        </div>
-        <div class="news-article-title">${esc(a.title)}</div>
-        ${snippet?`<div class="news-article-snippet">${esc(snippet)}</div>`:""}
-      </a>
-      ${dateStr?`<div class="news-article-date">📅 ${dateStr}</div>`:""}
-    </div>`;
-}
-
-function renderNewsList(list) {
-  list.innerHTML = FAV_GAMES.map((g, i) => {
-    const data        = newsCache[g.slug||g.name] || { screenshots:[], dlc:[], articles:[] };
-    const dlcFresh    = (data.dlc||[]).filter(x=>x.isFresh);
-    const arts        = data.articles||[];
-    const artsHot     = arts.filter(a=>a.isFresh7);   // ≤ 7 days → highlighted
-    const artsOlder   = arts.filter(a=>!a.isFresh7);  // 8–90 days → collapsible
-    const hasFreshDLC = dlcFresh.length>0;
-    const hasNews     = arts.length>0;
-    const freshCount  = artsHot.length;
-
-    const gNews  = enc(`${g.name} neuigkeiten`);
-    const gPatch = enc(`${g.name} patch update DLC`);
-
-    return `
-    <div class="news-card${(hasFreshDLC||hasNews)?" has-new":""}" id="nc-${i}" style="animation-delay:${i*60}ms">
+    <div class="news-card" id="nc-${i}" style="animation-delay:${i*60}ms">
       <div class="news-card-hdr" onclick="toggleNewsCard(${i})">
         ${g.bg
           ? `<img class="news-card-cover" src="${g.bg}" loading="lazy" alt="" onerror="this.style.display='none'">`
           : `<div class="news-card-cover-placeholder">🎮</div>`}
         <div class="news-card-meta">
-          <div class="news-card-title">${esc(g.name)}</div>
+          <div class="news-card-title">${esc(gName)}</div>
           <div class="news-card-sub">
             ${g.released?`<span>📅 ${g.released.slice(0,4)}</span>`:""}
             ${g.rating?`<span>⭐ ${(+g.rating).toFixed(1)}</span>`:""}
-            ${artsHot.length
-              ?`<span class="news-new-badge">🔥 ${artsHot.length} Artikel ≤ 7 Tage</span>`
-              :artsOlder.length
-                ?`<span class="news-new-badge" style="border-color:var(--text-3);color:var(--text-3)">📰 ${artsOlder.length} Artikel ≤ 3 Monate</span>`
-                :`<span style="font-size:.7rem;color:var(--text-3)">Keine News gefunden</span>`}
+            <span style="color:var(--cyan)">📰 News, Updates, Videos & mehr</span>
           </div>
         </div>
         <span class="news-card-chevron">▼</span>
@@ -1914,92 +1772,60 @@ function renderNewsList(list) {
       <div class="news-card-body">
         <div class="news-card-inner">
 
-          <!-- NEWS ARTICLES -->
-          <div class="news-section">
-            <div class="news-section-title">
-              <span>📰</span> Aktuelle News
-              <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--text-3);font-weight:400;margin-left:6px">via Google News</span>
-            </div>
-            ${artsHot.length ? `
-              <div class="news-articles-list" style="margin-bottom:${artsOlder.length?'8px':'0'}">
-                ${artsHot.map(a=>articleHTML(a)).join("")}
-              </div>` : ""}
-            ${artsOlder.length ? `
-              <button class="news-older-toggle" onclick="toggleOlder(this)">
-                <span>📂 ${artsOlder.length} ältere Artikel (letzte 3 Monate)</span>
-                <span class="older-chevron">▶</span>
-              </button>
-              <div class="news-older-list">
-                ${artsOlder.map(a=>articleHTML(a)).join("")}
-              </div>` : ""}
-            ${!arts.length ? `
-              <div class="news-no-articles">Keine Artikel in den letzten 3 Monaten gefunden</div>
-              <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-                <a class="news-glink" href="https://news.google.com/search?q=${enc(g.name)}+game&hl=de" target="_blank" rel="noopener">
-                  📰 Direkt auf Google News suchen
-                </a>
-              </div>` : ""}
+          <!-- News Category Tabs -->
+          <div class="news-inner-tabs" id="nit-${i}">
+            ${NEWS_TABS.map(t=>`
+              <button class="news-inner-tab${t.id==="news"?" nit-on":""}"
+                style="--ntc:${t.color}"
+                onclick="switchNewsTab(${i},'${t.id}',this)">
+                ${t.label}
+              </button>`).join("")}
           </div>
 
-          <!-- SCREENSHOTS -->
-          <div class="news-section">
-            <div class="news-section-title"><span>🖼️</span> Screenshots</div>
-            ${data.screenshots.length
-              ? `<div class="news-shots">${data.screenshots.map(s=>`<img class="news-shot" src="${s}" loading="lazy" onclick="openLB('${s}')" alt="screenshot">`).join("")}</div>`
-              : `<div class="news-no-shots">Keine Screenshots verfügbar</div>`}
-          </div>
-
-          <!-- DLC -->
-          <div class="news-section">
-            <div class="news-section-title">
-              <span>📦</span> DLC & Erweiterungen
-              <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--text-3);font-weight:400;margin-left:6px">(🆕 = letzte 3 Monate)</span>
-            </div>
-            ${data.dlc&&data.dlc.length ? `
-              <div class="news-dlc-list">
-                ${data.dlc.map(d=>`
-                  <div class="news-dlc-item" style="${d.isFresh?"border-color:rgba(0,245,212,.3)":""}">
-                    ${d.bg?`<img class="news-dlc-img" src="${d.bg}" loading="lazy" alt="" onerror="this.style.display='none'">` :""}
-                    <div class="news-dlc-info">
-                      <div class="news-dlc-name">${d.isFresh?`<span style="color:var(--cyan);margin-right:4px">🆕</span>`:""}${esc(d.name)}</div>
-                      <div class="news-dlc-meta">${d.released?`📅 ${d.released}`:"Kein Datum"}${d.rating?` · ⭐ ${d.rating.toFixed(1)}`:""}${!d.isFresh&&d.released?` · <span style="color:var(--text-3);font-size:.65rem">älter als 3 Monate</span>`:""}</div>
+          <!-- Source Panels -->
+          ${NEWS_TABS.map(t=>`
+            <div class="news-src-panel${t.id==="news"?" nsp-on":""}" id="nsp-${i}-${t.id}">
+              <div class="news-src-grid">
+                ${NEWS_SOURCES[t.id].map(src=>`
+                  <a class="news-src-card" href="${src.url(gName)}" target="_blank" rel="noopener"
+                     style="--nsc:${src.color}">
+                    <div class="nsc-icon">${src.icon}</div>
+                    <div class="nsc-info">
+                      <div class="nsc-name">${src.name}</div>
+                      <div class="nsc-desc">${src.desc}</div>
                     </div>
-                    <span class="news-dlc-tag ${d.tag}">${d.tag.toUpperCase()}</span>
-                  </div>`).join("")}
-              </div>`
-              : `<div class="news-no-dlc">Keine DLCs / Erweiterungen gefunden</div>`}
-          </div>
-
-          <!-- GOOGLE LINKS -->
-          <div class="news-section">
-            <div class="news-section-title"><span>🔍</span> Direkt suchen</div>
-            <div class="news-glinks">
-              <a class="news-glink" href="https://www.google.de/search?q=${gNews}&tbm=nws" target="_blank" rel="noopener">📰 Google News</a>
-              <a class="news-glink" href="https://www.google.de/search?q=${gPatch}" target="_blank" rel="noopener">🔧 Patches & DLC</a>
-              <a class="news-glink" href="https://www.gamestar.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">⭐ Gamestar</a>
-              <a class="news-glink" href="https://www.gamepro.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">🕹️ GamePro</a>
-            </div>
-          </div>
+                    <div class="nsc-arrow">→</div>
+                  </a>`).join("")}
+              </div>
+              <div class="news-google-preview">
+                <div class="ngp-label">🔍 Vorschau auf Google</div>
+                <a class="ngp-link" href="https://www.google.de/search?q=${encodeURIComponent(gName+' '+t.id)}&tbm=nws" target="_blank" rel="noopener">
+                  Alle Google News zu „${esc(gName)}"  →
+                </a>
+              </div>
+            </div>`).join("")}
 
         </div>
       </div>
     </div>`;
-  }).join("");
-  document.querySelectorAll(".news-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*55));
 }
 
-function toggleOlder(btn) {
-  const list = btn.nextElementSibling;
-  const chev = btn.querySelector(".older-chevron");
-  const open = list.classList.toggle("open");
-  if (chev) chev.textContent = open ? "▼" : "▶";
+function switchNewsTab(cardIdx, tabId, btn) {
+  // Update tab buttons
+  const tabs = document.querySelectorAll(`#nit-${cardIdx} .news-inner-tab`);
+  tabs.forEach(t=>t.classList.remove("nit-on"));
+  btn.classList.add("nit-on");
+  // Show correct panel
+  NEWS_TABS.forEach(t=>{
+    const panel = document.getElementById(`nsp-${cardIdx}-${t.id}`);
+    if(panel) panel.classList.toggle("nsp-on", t.id===tabId);
+  });
 }
 
 function toggleNewsCard(i) {
   const card = document.getElementById(`nc-${i}`);
   if (!card) return;
   const isOpen = card.classList.contains("open");
-  // close all
   document.querySelectorAll(".news-card.open").forEach(c=>c.classList.remove("open"));
   if (!isOpen) card.classList.add("open");
 }
