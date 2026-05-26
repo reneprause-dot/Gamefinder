@@ -518,6 +518,21 @@ footer a{color:var(--cyan);text-decoration:none}
   <div id="fav-results-list"></div>
 </div>
 
+<!-- ═══════════════════ PAGE: NEWS ═══════════════════ -->
+<div class="page" id="page-news">
+  <div class="sec-hdr">
+    <div>
+      <div class="sec-title">📰 Neuigkeiten</div>
+      <div class="sec-sub">Aktuelle Infos zu deinen Favoriten-Spielen</div>
+    </div>
+    <button class="refresh-btn" id="news-refresh-btn" onclick="loadNewsPage(true)">
+      <span class="ri">🔄</span> Aktualisieren
+    </button>
+  </div>
+  <div class="news-ts" id="news-ts" style="margin-bottom:16px"></div>
+  <div id="news-list"></div>
+</div>
+
 <!-- DB + Footer -->
 <section class="db-sec">
   <div>
@@ -662,6 +677,7 @@ function showPage(id,btn){
   if(id==="new"&&!document.getElementById("new-grid").querySelector(".game-card"))loadNew("");
   if(id==="charts"&&!document.getElementById("chart-grid").querySelector(".game-card"))loadCharts("");
   if(id==="favs")renderFavsPage();
+  if(id==="news")loadNewsPage(false);
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -1217,6 +1233,206 @@ function updateFavBadge(){
   const badge=document.getElementById("fav-badge");
   if(total>0){badge.textContent=total;badge.style.display="";}
   else{badge.style.display="none";}
+}
+
+// ═══════════════════════════════════════════════════════
+// NEWS PAGE
+// ═══════════════════════════════════════════════════════
+const NEWS_CACHE_KEY = "gf_news_cache";
+const NEWS_CACHE_TS  = "gf_news_ts";
+let newsCache = loadStore(NEWS_CACHE_KEY, {});
+
+async function loadNewsPage(forceRefresh) {
+  const list = document.getElementById("news-list");
+  const tsEl = document.getElementById("news-ts");
+  const btn  = document.getElementById("news-refresh-btn");
+
+  if (!FAV_GAMES.length) {
+    list.innerHTML = `
+      <div class="news-empty">
+        <div class="empty-ico">📰</div>
+        <div class="empty-txt">
+          Noch keine Favoriten gespeichert.<br>
+          Speichere Spiele über ❤️ im Spielbanner oder in den<br>
+          <a href="#" onclick="showPage('charts',document.querySelector('[data-page=charts]'))">🏆 Charts</a> &
+          <a href="#" onclick="showPage('new',document.querySelector('[data-page=new]'))">🆕 Neuerscheinungen</a>.
+        </div>
+      </div>`;
+    return;
+  }
+
+  const cachedTs = localStorage.getItem(NEWS_CACHE_TS);
+  const cacheAge = cachedTs ? (Date.now() - new Date(cachedTs).getTime()) : Infinity;
+  const useCache = !forceRefresh && cacheAge < 30 * 60 * 1000; // 30 min cache
+
+  if (useCache && Object.keys(newsCache).length) {
+    tsEl.textContent = `Stand: ${new Date(cachedTs).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr`;
+    renderNewsList(list);
+    return;
+  }
+
+  // Show skeleton loaders
+  list.innerHTML = FAV_GAMES.map(g => `
+    <div class="news-card in" style="border-color:var(--border)">
+      <div class="news-card-hdr">
+        <div class="news-card-cover-placeholder">🎮</div>
+        <div class="news-card-meta">
+          <div class="news-card-title" style="color:var(--text-3)">${esc(g.name)}</div>
+          <div class="news-card-sub"><span>⏳ Lade Neuigkeiten…</span></div>
+        </div>
+      </div>
+    </div>`).join("");
+
+  if (btn) { btn.classList.add("spinning"); btn.disabled = true; }
+
+  // Fetch all games in parallel
+  const results = await Promise.allSettled(FAV_GAMES.map(g => fetchNewsForGame(g)));
+  results.forEach((r, i) => {
+    if (r.status === "fulfilled") newsCache[FAV_GAMES[i].slug] = r.value;
+  });
+  saveStore(NEWS_CACHE_KEY, newsCache);
+  const now = new Date().toISOString();
+  localStorage.setItem(NEWS_CACHE_TS, now);
+  tsEl.textContent = `Stand: ${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr`;
+
+  if (btn) { btn.classList.remove("spinning"); btn.disabled = false; }
+  renderNewsList(list);
+
+  // Update news badge
+  const totalNew = Object.values(newsCache).reduce((s,n)=>(n.screenshots?.length||0)>0||(n.dlc?.length||0)>0?s+1:s,0);
+  const nb = document.getElementById("news-badge");
+  if (nb) { if(totalNew>0){nb.style.display="";} else {nb.style.display="none";} }
+}
+
+async function fetchNewsForGame(g) {
+  const slug = g.slug;
+  const [shotsRes, dlcRes] = await Promise.allSettled([
+    fetch(`${CFG.rawg}/games/${slug}/screenshots?key=${CFG.rawgKey}&page_size=6`),
+    fetch(`${CFG.rawg}/games/${slug}/additions?key=${CFG.rawgKey}&page_size=8`)
+  ]);
+
+  let screenshots = [];
+  if (shotsRes.status==="fulfilled" && shotsRes.value.ok) {
+    const d = await shotsRes.value.json();
+    screenshots = (d.results||[]).map(s=>s.image);
+  }
+
+  let dlc = [];
+  if (dlcRes.status==="fulfilled" && dlcRes.value.ok) {
+    const d = await dlcRes.value.json();
+    dlc = (d.results||[]).map(x=>({
+      name: x.name,
+      bg: x.background_image||"",
+      released: x.released||"",
+      rating: x.rating||0,
+      tag: guessDLCTag(x.name)
+    }));
+  }
+
+  return { screenshots, dlc, fetchedAt: new Date().toISOString() };
+}
+
+function guessDLCTag(name) {
+  const n = name.toLowerCase();
+  if (n.includes("expansion")||n.includes("erweiterung")||n.includes("season pass")) return "expansion";
+  if (n.includes("edition")||n.includes("bundle")||n.includes("complete")||n.includes("goty")) return "edition";
+  return "dlc";
+}
+
+function renderNewsList(list) {
+  list.innerHTML = FAV_GAMES.map((g, i) => {
+    const data = newsCache[g.slug] || { screenshots:[], dlc:[] };
+    const hasContent = data.screenshots.length > 0 || data.dlc.length > 0;
+    const newCount = data.screenshots.length + data.dlc.length;
+
+    const gNews   = enc(`${g.name} neuigkeiten`);
+    const gPatch  = enc(`${g.name} patch update DLC`);
+    const gReview = enc(`${g.name} news`);
+
+    return `
+    <div class="news-card${hasContent?" has-new":""}" id="nc-${i}" style="animation-delay:${i*60}ms">
+      <div class="news-card-hdr" onclick="toggleNewsCard(${i})">
+        ${g.bg
+          ? `<img class="news-card-cover" src="${g.bg}" loading="lazy" alt="" onerror="this.style.display='none'">`
+          : `<div class="news-card-cover-placeholder">🎮</div>`}
+        <div class="news-card-meta">
+          <div class="news-card-title">${esc(g.name)}</div>
+          <div class="news-card-sub">
+            ${g.released ? `<span>📅 ${g.released.slice(0,4)}</span>` : ""}
+            ${g.rating   ? `<span>⭐ ${(+g.rating).toFixed(1)}</span>` : ""}
+            ${newCount   ? `<span class="news-new-badge">+${newCount} Inhalte</span>` : `<span>Keine neuen Einträge</span>`}
+          </div>
+        </div>
+        <span class="news-card-chevron">▼</span>
+      </div>
+      <div class="news-card-body">
+        <div class="news-card-inner">
+
+          <!-- SCREENSHOTS -->
+          <div class="news-section">
+            <div class="news-section-title"><span>🖼️</span> Screenshots & Artwork</div>
+            ${data.screenshots.length
+              ? `<div class="news-shots">
+                  ${data.screenshots.map(s=>`<img class="news-shot" src="${s}" loading="lazy" onclick="openLB('${s}')" alt="screenshot">`).join("")}
+                 </div>`
+              : `<div class="news-no-shots">Keine Screenshots verfügbar</div>`}
+          </div>
+
+          <!-- DLC / ADDITIONS -->
+          <div class="news-section">
+            <div class="news-section-title"><span>📦</span> DLC & Erweiterungen</div>
+            ${data.dlc.length
+              ? `<div class="news-dlc-list">
+                  ${data.dlc.map(d=>`
+                    <div class="news-dlc-item">
+                      ${d.bg ? `<img class="news-dlc-img" src="${d.bg}" loading="lazy" alt="" onerror="this.style.display='none'">` : ""}
+                      <div class="news-dlc-info">
+                        <div class="news-dlc-name">${esc(d.name)}</div>
+                        <div class="news-dlc-meta">${d.released ? `📅 ${d.released}` : ""}${d.rating ? ` · ⭐ ${d.rating.toFixed(1)}` : ""}</div>
+                      </div>
+                      <span class="news-dlc-tag ${d.tag}">${d.tag.toUpperCase()}</span>
+                    </div>`).join("")}
+                 </div>`
+              : `<div class="news-no-dlc">Keine DLCs / Erweiterungen gefunden</div>`}
+          </div>
+
+          <!-- GOOGLE NEWS LINKS -->
+          <div class="news-section">
+            <div class="news-section-title"><span>🔍</span> Google News & Updates</div>
+            <div class="news-glinks">
+              <a class="news-glink" href="https://www.google.de/search?q=${gNews}&tbm=nws" target="_blank" rel="noopener">
+                📰 Aktuelle News
+              </a>
+              <a class="news-glink" href="https://www.google.de/search?q=${gPatch}" target="_blank" rel="noopener">
+                🔧 Patches & Updates
+              </a>
+              <a class="news-glink" href="https://www.google.de/search?q=${gReview}&tbm=nws" target="_blank" rel="noopener">
+                🌐 Allgemeine News
+              </a>
+              <a class="news-glink" href="https://www.gamestar.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">
+                ⭐ Gamestar
+              </a>
+              <a class="news-glink" href="https://www.gamepro.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">
+                🕹️ GamePro
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  document.querySelectorAll(".news-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*55));
+}
+
+function toggleNewsCard(i) {
+  const card = document.getElementById(`nc-${i}`);
+  if (!card) return;
+  const isOpen = card.classList.contains("open");
+  // close all
+  document.querySelectorAll(".news-card.open").forEach(c=>c.classList.remove("open"));
+  if (!isOpen) card.classList.add("open");
 }
 
 // ═══════════════════════════════════════════════════════
