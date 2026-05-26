@@ -479,6 +479,34 @@ footer a{color:var(--cyan);text-decoration:none}
 .recent-card-name{padding:5px 7px;font-size:.7rem;font-weight:700;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-2)}
 
+/* NEWS ARTICLES */
+.news-articles-list{display:flex;flex-direction:column;gap:8px}
+.news-article{background:var(--bg-deep);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.news-article:hover{border-color:var(--cyan)}
+.news-article-inner{padding:11px 13px;text-decoration:none;color:var(--text-1);display:block}
+.news-article-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.news-age-badge{padding:2px 8px;border-radius:20px;font-size:.63rem;
+  font-family:'JetBrains Mono',monospace;white-space:nowrap;font-weight:700}
+.news-age-badge.hot{background:rgba(247,37,133,.15);border:1px solid var(--pink);color:var(--pink)}
+.news-age-badge.fresh{background:rgba(0,245,212,.1);border:1px solid var(--cyan);color:var(--cyan)}
+.news-age-badge.old{background:rgba(255,255,255,.04);border:1px solid var(--border-lit);color:var(--text-3)}
+.news-article-source{font-size:.68rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.news-article-title{font-weight:700;font-size:.88rem;line-height:1.4;margin-bottom:4px}
+.news-article-snippet{font-size:.76rem;color:var(--text-2);line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-article-date{font-size:.68rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;
+  padding:5px 13px;border-top:1px solid var(--border)}
+.news-older-toggle{display:flex;align-items:center;justify-content:space-between;
+  gap:8px;padding:9px 13px;background:var(--bg-hover);border:1px solid var(--border-lit);
+  border-radius:var(--r);cursor:pointer;font-size:.8rem;color:var(--text-2);
+  transition:all .15s;margin-top:4px;font-family:'JetBrains Mono',monospace;width:100%}
+.news-older-toggle:hover{border-color:var(--cyan);color:var(--cyan)}
+.news-older-list{display:none;flex-direction:column;gap:8px;margin-top:8px}
+.news-older-list.open{display:flex}
+.news-no-articles{font-size:.8rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;
+  padding:10px 0;text-align:center}
+
 /* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--bg-card);border:1px solid var(--border-lit);border-radius:var(--r);
@@ -1717,42 +1745,68 @@ async function loadNewsPage(forceRefresh) {
 
 async function fetchNewsForGame(g) {
   const slug = g.slug;
-  const [shotsRes, dlcRes] = await Promise.allSettled([
-    fetch(`${CFG.rawg}/games/${slug}/screenshots?key=${CFG.rawgKey}&page_size=6`),
-    fetch(`${CFG.rawg}/games/${slug}/additions?key=${CFG.rawgKey}&page_size=8`)
-  ]);
 
+  // ── 1. Screenshots via RAWG ──────────────────────────
   let screenshots = [];
-  if (shotsRes.status==="fulfilled" && shotsRes.value.ok) {
-    const d = await shotsRes.value.json();
-    screenshots = (d.results||[]).map(s=>s.image);
-  }
+  try {
+    const r = await fetch(`${CFG.rawg}/games/${slug}/screenshots?key=${CFG.rawgKey}&page_size=6`);
+    if (r.ok) { const d = await r.json(); screenshots = (d.results||[]).map(s=>s.image); }
+  } catch{}
 
-  // 3-month cutoff
-  const cutoff = new Date();
-  cutoff.setMonth(cutoff.getMonth() - 3);
-
+  // ── 2. DLC via RAWG ──────────────────────────────────
+  const cutoff3m = new Date(); cutoff3m.setMonth(cutoff3m.getMonth()-3);
   let dlc = [];
-  let dlcFresh = []; // only entries within 3 months
-  if (dlcRes.status==="fulfilled" && dlcRes.value.ok) {
-    const d = await dlcRes.value.json();
-    dlc = (d.results||[]).map(x=>({
-      name:     x.name,
-      bg:       x.background_image||"",
-      released: x.released||"",
-      rating:   x.rating||0,
-      tag:      guessDLCTag(x.name),
-      isFresh:  x.released ? new Date(x.released) >= cutoff : false
-    }));
-    dlcFresh = dlc.filter(x=>x.isFresh);
-  }
+  try {
+    const r = await fetch(`${CFG.rawg}/games/${slug}/additions?key=${CFG.rawgKey}&page_size=8`);
+    if (r.ok) {
+      const d = await r.json();
+      dlc = (d.results||[]).map(x=>({
+        name:     x.name,
+        bg:       x.background_image||"",
+        released: x.released||"",
+        rating:   x.rating||0,
+        tag:      guessDLCTag(x.name),
+        isFresh:  x.released ? new Date(x.released)>=cutoff3m : false
+      }));
+    }
+  } catch{}
 
-  return {
-    screenshots,
-    dlc,
-    dlcFresh,         // only ≤ 3 months old
-    fetchedAt: new Date().toISOString()
-  };
+  // ── 3. Google News RSS via rss2json ───────────────────
+  const cutoff7d = new Date(); cutoff7d.setDate(cutoff7d.getDate()-7);
+  let articles = [];
+  try {
+    const query   = encodeURIComponent(`"${g.name}" game`);
+    const rssUrl  = `https://news.google.com/rss/search?q=${query}&hl=de&gl=DE&ceid=DE:de`;
+    const apiUrl  = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
+    const r = await fetch(apiUrl);
+    if (r.ok) {
+      const d = await r.json();
+      const cutoff3mMs = cutoff3m.getTime();
+      articles = (d.items||[])
+        .map(item => {
+          const pub  = new Date(item.pubDate||item.published||"");
+          const ageMs= Date.now() - pub.getTime();
+          const ageDays = Math.floor(ageMs/86400000);
+          return {
+            title:   (item.title||"").replace(/<[^>]+>/g,"").trim(),
+            url:     item.link||item.url||"",
+            source:  item.author||extractDomain(item.link||""),
+            snippet: (item.description||item.content||"").replace(/<[^>]+>/g,"").trim().slice(0,160),
+            pubDate: pub,
+            ageDays,
+            isFresh7:  ageDays <= 7,
+            isFresh3m: pub.getTime() >= cutoff3mMs,
+          };
+        })
+        .filter(a => a.isFresh3m && a.title && a.url); // only ≤ 3 months
+    }
+  } catch(e) { console.warn("RSS fetch failed:", e.message); }
+
+  return { screenshots, dlc, articles, fetchedAt: new Date().toISOString() };
+}
+
+function extractDomain(url) {
+  try { return new URL(url).hostname.replace("www.",""); } catch { return ""; }
 }
 
 function guessDLCTag(name) {
@@ -1762,20 +1816,49 @@ function guessDLCTag(name) {
   return "dlc";
 }
 
+function ageBadge(a) {
+  if (a.ageDays <= 2)  return `<span class="news-age-badge hot">🔥 ${a.ageDays===0?"Heute":a.ageDays+"d"}</span>`;
+  if (a.ageDays <= 7)  return `<span class="news-age-badge hot">⚡ ${a.ageDays}d</span>`;
+  if (a.isFresh3m)     return `<span class="news-age-badge fresh">🆕 ${Math.ceil(a.ageDays/7)}w</span>`;
+  return                      `<span class="news-age-badge old">${Math.ceil(a.ageDays/30)}mo</span>`;
+}
+
+function articleHTML(a) {
+  // strip HTML from snippet
+  const snippet = a.snippet.length > 10 ? a.snippet : "";
+  const dateStr = a.pubDate instanceof Date && !isNaN(a.pubDate)
+    ? a.pubDate.toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"})
+    : "";
+  return `
+    <div class="news-article">
+      <a class="news-article-inner" href="${a.url}" target="_blank" rel="noopener">
+        <div class="news-article-meta">
+          ${ageBadge(a)}
+          <span class="news-article-source">${esc(a.source)}</span>
+        </div>
+        <div class="news-article-title">${esc(a.title)}</div>
+        ${snippet?`<div class="news-article-snippet">${esc(snippet)}</div>`:""}
+      </a>
+      ${dateStr?`<div class="news-article-date">📅 ${dateStr}</div>`:""}
+    </div>`;
+}
+
 function renderNewsList(list) {
   list.innerHTML = FAV_GAMES.map((g, i) => {
-    const data      = newsCache[g.slug] || { screenshots:[], dlc:[], dlcFresh:[] };
-    const dlcFresh  = data.dlcFresh || data.dlc.filter(x=>x.isFresh);
-    const hasFreshDLC = dlcFresh.length > 0;
-    const hasContent  = data.screenshots.length > 0 || data.dlc.length > 0;
-    const freshCount  = dlcFresh.length;
+    const data        = newsCache[g.slug] || { screenshots:[], dlc:[], articles:[] };
+    const dlcFresh    = (data.dlc||[]).filter(x=>x.isFresh);
+    const arts        = data.articles||[];
+    const artsHot     = arts.filter(a=>a.isFresh7);   // ≤ 7 days → highlighted
+    const artsOlder   = arts.filter(a=>!a.isFresh7);  // 8–90 days → collapsible
+    const hasFreshDLC = dlcFresh.length>0;
+    const hasNews     = arts.length>0;
+    const freshCount  = artsHot.length;
 
-    const gNews   = enc(`${g.name} neuigkeiten`);
-    const gPatch  = enc(`${g.name} patch update DLC`);
-    const gReview = enc(`${g.name} news`);
+    const gNews  = enc(`${g.name} neuigkeiten`);
+    const gPatch = enc(`${g.name} patch update DLC`);
 
     return `
-    <div class="news-card${hasFreshDLC?" has-new":""}" id="nc-${i}" style="animation-delay:${i*60}ms">
+    <div class="news-card${(hasFreshDLC||hasNews)?" has-new":""}" id="nc-${i}" style="animation-delay:${i*60}ms">
       <div class="news-card-hdr" onclick="toggleNewsCard(${i})">
         ${g.bg
           ? `<img class="news-card-cover" src="${g.bg}" loading="lazy" alt="" onerror="this.style.display='none'">`
@@ -1783,13 +1866,13 @@ function renderNewsList(list) {
         <div class="news-card-meta">
           <div class="news-card-title">${esc(g.name)}</div>
           <div class="news-card-sub">
-            ${g.released ? `<span>📅 ${g.released.slice(0,4)}</span>` : ""}
-            ${g.rating   ? `<span>⭐ ${(+g.rating).toFixed(1)}</span>` : ""}
-            ${hasFreshDLC
-              ? `<span class="news-new-badge">🆕 ${freshCount} neu (≤ 3 Monate)</span>`
-              : hasContent
-                ? `<span style="font-size:.7rem;color:var(--text-3)">Keine neuen Einträge</span>`
-                : `<span style="font-size:.7rem;color:var(--text-3)">Keine Daten</span>`}
+            ${g.released?`<span>📅 ${g.released.slice(0,4)}</span>`:""}
+            ${g.rating?`<span>⭐ ${(+g.rating).toFixed(1)}</span>`:""}
+            ${artsHot.length
+              ?`<span class="news-new-badge">🔥 ${artsHot.length} Artikel ≤ 7 Tage</span>`
+              :artsOlder.length
+                ?`<span class="news-new-badge" style="border-color:var(--text-3);color:var(--text-3)">📰 ${artsOlder.length} Artikel ≤ 3 Monate</span>`
+                :`<span style="font-size:.7rem;color:var(--text-3)">Keine News gefunden</span>`}
           </div>
         </div>
         <span class="news-card-chevron">▼</span>
@@ -1797,13 +1880,32 @@ function renderNewsList(list) {
       <div class="news-card-body">
         <div class="news-card-inner">
 
+          <!-- NEWS ARTICLES -->
+          <div class="news-section">
+            <div class="news-section-title">
+              <span>📰</span> Aktuelle News
+              <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--text-3);font-weight:400;margin-left:6px">via Google News</span>
+            </div>
+            ${artsHot.length ? `
+              <div class="news-articles-list" style="margin-bottom:${artsOlder.length?'8px':'0'}">
+                ${artsHot.map(a=>articleHTML(a)).join("")}
+              </div>` : ""}
+            ${artsOlder.length ? `
+              <button class="news-older-toggle" onclick="toggleOlder(this)">
+                <span>📂 ${artsOlder.length} ältere Artikel (letzte 3 Monate)</span>
+                <span class="older-chevron">▶</span>
+              </button>
+              <div class="news-older-list">
+                ${artsOlder.map(a=>articleHTML(a)).join("")}
+              </div>` : ""}
+            ${!arts.length ? `<div class="news-no-articles">Keine Artikel in den letzten 3 Monaten gefunden</div>` : ""}
+          </div>
+
           <!-- SCREENSHOTS -->
           <div class="news-section">
-            <div class="news-section-title"><span>🖼️</span> Screenshots & Artwork</div>
+            <div class="news-section-title"><span>🖼️</span> Screenshots</div>
             ${data.screenshots.length
-              ? `<div class="news-shots">
-                  ${data.screenshots.map(s=>`<img class="news-shot" src="${s}" loading="lazy" onclick="openLB('${s}')" alt="screenshot">`).join("")}
-                 </div>`
+              ? `<div class="news-shots">${data.screenshots.map(s=>`<img class="news-shot" src="${s}" loading="lazy" onclick="openLB('${s}')" alt="screenshot">`).join("")}</div>`
               : `<div class="news-no-shots">Keine Screenshots verfügbar</div>`}
           </div>
 
@@ -1811,33 +1913,29 @@ function renderNewsList(list) {
           <div class="news-section">
             <div class="news-section-title">
               <span>📦</span> DLC & Erweiterungen
-              <span style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-3);margin-left:6px;font-weight:400">(🆕 = letzte 3 Monate)</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--text-3);font-weight:400;margin-left:6px">(🆕 = letzte 3 Monate)</span>
             </div>
-            ${data.dlc.length ? `
+            ${data.dlc&&data.dlc.length ? `
               <div class="news-dlc-list">
                 ${data.dlc.map(d=>`
                   <div class="news-dlc-item" style="${d.isFresh?"border-color:rgba(0,245,212,.3)":""}">
-                    ${d.bg ? `<img class="news-dlc-img" src="${d.bg}" loading="lazy" alt="" onerror="this.style.display='none'">` : ""}
+                    ${d.bg?`<img class="news-dlc-img" src="${d.bg}" loading="lazy" alt="" onerror="this.style.display='none'">` :""}
                     <div class="news-dlc-info">
-                      <div class="news-dlc-name">${d.isFresh?`<span style="color:var(--cyan);margin-right:4px">🆕</span>`:""} ${esc(d.name)}</div>
-                      <div class="news-dlc-meta">
-                        ${d.released ? `📅 ${d.released}` : "Kein Datum"}
-                        ${d.rating ? ` · ⭐ ${d.rating.toFixed(1)}` : ""}
-                        ${!d.isFresh && d.released ? ` · <span style="color:var(--text-3);font-size:.65rem">älter als 3 Monate</span>` : ""}
-                      </div>
+                      <div class="news-dlc-name">${d.isFresh?`<span style="color:var(--cyan);margin-right:4px">🆕</span>`:""}${esc(d.name)}</div>
+                      <div class="news-dlc-meta">${d.released?`📅 ${d.released}`:"Kein Datum"}${d.rating?` · ⭐ ${d.rating.toFixed(1)}`:""}${!d.isFresh&&d.released?` · <span style="color:var(--text-3);font-size:.65rem">älter als 3 Monate</span>`:""}</div>
                     </div>
                     <span class="news-dlc-tag ${d.tag}">${d.tag.toUpperCase()}</span>
                   </div>`).join("")}
-              </div>` : `<div class="news-no-dlc">Keine DLCs / Erweiterungen gefunden</div>`}
+              </div>`
+              : `<div class="news-no-dlc">Keine DLCs / Erweiterungen gefunden</div>`}
           </div>
 
-          <!-- GOOGLE NEWS -->
+          <!-- GOOGLE LINKS -->
           <div class="news-section">
-            <div class="news-section-title"><span>🔍</span> Google News & Updates</div>
+            <div class="news-section-title"><span>🔍</span> Direkt suchen</div>
             <div class="news-glinks">
-              <a class="news-glink" href="https://www.google.de/search?q=${gNews}&tbm=nws" target="_blank" rel="noopener">📰 Aktuelle News</a>
-              <a class="news-glink" href="https://www.google.de/search?q=${gPatch}" target="_blank" rel="noopener">🔧 Patches & Updates</a>
-              <a class="news-glink" href="https://www.google.de/search?q=${gReview}&tbm=nws" target="_blank" rel="noopener">🌐 Allgemeine News</a>
+              <a class="news-glink" href="https://www.google.de/search?q=${gNews}&tbm=nws" target="_blank" rel="noopener">📰 Google News</a>
+              <a class="news-glink" href="https://www.google.de/search?q=${gPatch}" target="_blank" rel="noopener">🔧 Patches & DLC</a>
               <a class="news-glink" href="https://www.gamestar.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">⭐ Gamestar</a>
               <a class="news-glink" href="https://www.gamepro.de/suche/?keywords=${enc(g.name)}" target="_blank" rel="noopener">🕹️ GamePro</a>
             </div>
@@ -1848,6 +1946,13 @@ function renderNewsList(list) {
     </div>`;
   }).join("");
   document.querySelectorAll(".news-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*55));
+}
+
+function toggleOlder(btn) {
+  const list = btn.nextElementSibling;
+  const chev = btn.querySelector(".older-chevron");
+  const open = list.classList.toggle("open");
+  if (chev) chev.textContent = open ? "▼" : "▶";
 }
 
 function toggleNewsCard(i) {
