@@ -1771,36 +1771,84 @@ async function fetchNewsForGame(g) {
     }
   } catch{}
 
-  // ── 3. Google News RSS via rss2json ───────────────────
+  // ── 3. Google News RSS – multi-proxy fallback chain ──
   const cutoff7d = new Date(); cutoff7d.setDate(cutoff7d.getDate()-7);
   let articles = [];
   try {
-    const query   = encodeURIComponent(`"${g.name}" game`);
-    const rssUrl  = `https://news.google.com/rss/search?q=${query}&hl=de&gl=DE&ceid=DE:de`;
-    const apiUrl  = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
-    const r = await fetch(apiUrl);
-    if (r.ok) {
-      const d = await r.json();
-      const cutoff3mMs = cutoff3m.getTime();
-      articles = (d.items||[])
-        .map(item => {
-          const pub  = new Date(item.pubDate||item.published||"");
-          const ageMs= Date.now() - pub.getTime();
-          const ageDays = Math.floor(ageMs/86400000);
-          return {
-            title:   (item.title||"").replace(/<[^>]+>/g,"").trim(),
-            url:     item.link||item.url||"",
-            source:  item.author||extractDomain(item.link||""),
-            snippet: (item.description||item.content||"").replace(/<[^>]+>/g,"").trim().slice(0,160),
-            pubDate: pub,
-            ageDays,
-            isFresh7:  ageDays <= 7,
-            isFresh3m: pub.getTime() >= cutoff3mMs,
-          };
-        })
-        .filter(a => a.isFresh3m && a.title && a.url); // only ≤ 3 months
+    const query  = encodeURIComponent(`"${g.name}" game`);
+    const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=de&gl=DE&ceid=DE:de`;
+
+    // Try proxies in order until one works
+    const proxies = [
+      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`,
+      `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`,
+      `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`
+    ];
+
+    let raw = null;
+    let useXML = false;
+
+    for (const proxy of proxies) {
+      try {
+        const r = await fetch(proxy, {signal: AbortSignal.timeout(6000)});
+        if (!r.ok) continue;
+        const text = await r.text();
+        // rss2json returns JSON, others return raw XML wrapped in JSON or plain XML
+        if (proxy.includes("rss2json")) {
+          const d = JSON.parse(text);
+          if (d.status === "ok" && d.items?.length) {
+            raw = d.items; useXML = false; break;
+          }
+        } else if (proxy.includes("allorigins")) {
+          const d = JSON.parse(text);
+          raw = d.contents; useXML = true; break;
+        } else {
+          // corsproxy returns raw XML
+          raw = text; useXML = true; break;
+        }
+      } catch { continue; }
     }
-  } catch(e) { console.warn("RSS fetch failed:", e.message); }
+
+    const cutoff3mMs = cutoff3m.getTime();
+
+    if (raw && !useXML) {
+      // Already parsed JSON items from rss2json
+      articles = raw.map(item => {
+        const pub     = new Date(item.pubDate || item.published || "");
+        const ageDays = Math.floor((Date.now() - pub.getTime()) / 86400000);
+        return {
+          title:    (item.title||"").replace(/<[^>]+>/g,"").trim(),
+          url:      item.link || item.url || "",
+          source:   item.author || extractDomain(item.link||""),
+          snippet:  (item.description||item.content||"").replace(/<[^>]+>/g,"").trim().slice(0,200),
+          pubDate:  pub, ageDays,
+          isFresh7:  ageDays <= 7,
+          isFresh3m: pub.getTime() >= cutoff3mMs,
+        };
+      }).filter(a => a.isFresh3m && a.title && a.url);
+
+    } else if (raw && useXML) {
+      // Parse XML string manually
+      const parser = new DOMParser();
+      const xml    = parser.parseFromString(raw, "text/xml");
+      const items  = [...xml.querySelectorAll("item")];
+      articles = items.map(item => {
+        const title   = item.querySelector("title")?.textContent?.replace(/<[^>]+>/g,"").trim() || "";
+        const link    = item.querySelector("link")?.textContent?.trim()
+                     || item.querySelector("guid")?.textContent?.trim() || "";
+        const desc    = item.querySelector("description")?.textContent?.replace(/<[^>]+>/g,"").trim().slice(0,200) || "";
+        const pubStr  = item.querySelector("pubDate")?.textContent?.trim() || "";
+        const pub     = pubStr ? new Date(pubStr) : new Date(0);
+        const ageDays = Math.floor((Date.now() - pub.getTime()) / 86400000);
+        const src     = item.querySelector("source")?.textContent?.trim() || extractDomain(link);
+        return {
+          title, url: link, source: src, snippet: desc, pubDate: pub, ageDays,
+          isFresh7:  ageDays <= 7,
+          isFresh3m: pub.getTime() >= cutoff3mMs,
+        };
+      }).filter(a => a.isFresh3m && a.title && a.url);
+    }
+  } catch(e) { console.warn("News fetch failed:", e.message); }
 
   return { screenshots, dlc, articles, fetchedAt: new Date().toISOString() };
 }
@@ -1898,7 +1946,13 @@ function renderNewsList(list) {
               <div class="news-older-list">
                 ${artsOlder.map(a=>articleHTML(a)).join("")}
               </div>` : ""}
-            ${!arts.length ? `<div class="news-no-articles">Keine Artikel in den letzten 3 Monaten gefunden</div>` : ""}
+            ${!arts.length ? `
+              <div class="news-no-articles">Keine Artikel in den letzten 3 Monaten gefunden</div>
+              <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+                <a class="news-glink" href="https://news.google.com/search?q=${enc(g.name)}+game&hl=de" target="_blank" rel="noopener">
+                  📰 Direkt auf Google News suchen
+                </a>
+              </div>` : ""}
           </div>
 
           <!-- SCREENSHOTS -->
