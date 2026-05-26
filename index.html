@@ -54,8 +54,9 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
 /* SEARCH CARD */
 .search-card{background:linear-gradient(135deg,rgba(15,15,26,.95),rgba(10,10,18,.98));
   border:1px solid var(--border-lit);border-radius:var(--rl);padding:26px 28px;margin-bottom:28px;
-  position:relative;overflow:hidden}
+  position:relative;overflow:visible}
 .search-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  border-radius:var(--rl) var(--rl) 0 0;
   background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);animation:scan 4s linear infinite}
 @keyframes scan{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
 .plat-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
@@ -131,18 +132,19 @@ select.pulse{animation:pulseB .6s ease}
   margin-top:6px;line-height:1.5}
 
 /* SUGGESTIONS */
-.search-anchor{position:relative;z-index:300}
-#suggestions{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:400;
+.search-anchor{position:relative;z-index:9999}
+#suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:9999;
   background:var(--bg-card);border:1px solid var(--cyan);border-radius:var(--r);
   max-height:0;opacity:0;transition:max-height .3s,opacity .2s;
-  box-shadow:0 24px 60px rgba(0,0,0,.85);overflow:hidden}
-#suggestions.open{max-height:500px;opacity:1;overflow-y:auto}
-.sug-item{display:flex;flex-direction:column;padding:10px 14px;cursor:pointer;
+  box-shadow:0 24px 60px rgba(0,0,0,.9),0 0 0 1px rgba(0,245,212,.15);
+  overflow:hidden;pointer-events:none}
+#suggestions.open{max-height:500px;opacity:1;overflow-y:auto;pointer-events:auto}
+.sug-item{display:flex;flex-direction:column;padding:11px 15px;cursor:pointer;
   border-bottom:1px solid var(--border);transition:background .12s}
 .sug-item:last-child{border-bottom:none}
 .sug-item:hover,.sug-item.hi{background:var(--bg-hover)}
-.sug-name{font-weight:700;font-size:.92rem;color:var(--text-1);margin-bottom:2px}
-.sug-meta{font-size:.7rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.sug-name{font-weight:700;font-size:.93rem;color:var(--text-1);margin-bottom:3px}
+.sug-meta{font-size:.71rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
 
 /* GAME BANNER */
 #game-banner{display:none;margin-bottom:24px;border-radius:var(--rl);overflow:hidden;
@@ -958,81 +960,86 @@ function onContentInput(){
 }
 
 function doContentSearch(){
-  const raw   = document.getElementById("content-input").value.trim();
-  const game  = S.game || document.getElementById("game-input").value.trim();
-  if(!game){ document.getElementById("game-input").classList.add("shake"); setTimeout(()=>document.getElementById("game-input").classList.remove("shake"),400); return; }
-  if(!raw){ document.getElementById("content-input").style.borderColor="var(--pink)"; setTimeout(()=>document.getElementById("content-input").style.borderColor="",1000); return; }
+  const raw  = document.getElementById("content-input").value.trim();
+  const game = S.game || document.getElementById("game-input").value.trim();
 
+  if(!game){
+    document.getElementById("game-input").classList.add("shake");
+    setTimeout(()=>document.getElementById("game-input").classList.remove("shake"),400);
+    return;
+  }
+  if(!raw){
+    const ci = document.getElementById("content-input");
+    ci.style.borderColor="var(--pink)";
+    setTimeout(()=>ci.style.borderColor="",1200);
+    showToast("⚠️ Bitte Suchinhalt eingeben");
+    return;
+  }
+
+  S.game = game;
   const tokens    = tokenise(raw);
   const platStr   = S.plat?.name || "";
   const detectedCat = detectCategory(tokens);
 
-  // Build combined query: game + all tokens + platform
+  // Full combined query: game title + every token + platform
   const combined  = [game, ...tokens, platStr].filter(Boolean).join(" ");
-  const gameOnly  = [game, platStr].filter(Boolean).join(" ");
+  const tokenStr  = tokens.length ? tokens.map(t=>`"${t}"`).join(", ") : `"${raw}"`;
 
-  // Override the active category to the detected one, then open results
-  S.game = game;
-  S.contentQuery = raw;
-  S.contentTokens = tokens;
-
-  // Build category tabs if not already
+  // Build tabs if missing
   const ct = document.getElementById("cat-tabs");
   if(!ct.children.length){
-    ct.innerHTML=CATS.map(c=>`
+    ct.innerHTML = CATS.map(c=>`
       <button class="cat-btn" data-cat="${c.id}" style="--cc:${c.color}">
         <span>${c.icon}</span><span class="lbl">${c.label}</span>
       </button>`).join("");
     ct.querySelectorAll(".cat-btn").forEach(b=>b.addEventListener("click",()=>openCat(b.dataset.cat)));
   }
 
-  document.getElementById("results").classList.add("show");
-  document.getElementById("results").scrollIntoView({behavior:"smooth",block:"start"});
-
-  // Open the best-matching category with token-enhanced URLs
-  openCatWithTokens(detectedCat, combined, tokens, game, platStr);
-  showToast(`${CATS.find(c=>c.id===detectedCat).icon} Suche in ${CATS.find(c=>c.id===detectedCat).label} gestartet`);
-}
-
-function openCatWithTokens(catId, combined, tokens, game, platStr){
-  S.activeCat = catId;
-  document.querySelectorAll(".cat-btn").forEach(b=>b.classList.toggle("on",b.dataset.cat===catId));
-  const cat  = CATS.find(c=>c.id===catId);
+  // Highlight the detected tab
+  ct.querySelectorAll(".cat-btn").forEach(b=>b.classList.toggle("on",b.dataset.cat===detectedCat));
+  S.activeCat = detectedCat;
+  const cat = CATS.find(c=>c.id===detectedCat);
   document.documentElement.style.setProperty("--cc",cat.color);
 
   const q  = enc(combined);
-  const gq = enc(`${game} ${platStr}`).trim();
   const g  = enc(game);
+  const gp = enc(`${game} ${platStr}`.trim());
 
-  // Token relevance note for display
-  const tokenStr = tokens.map(t=>`"${t}"`).join(", ");
+  const links = buildTokenLinks(detectedCat, combined, g, gp, q, cat);
 
-  const rc = document.getElementById("res-content");
-  rc.innerHTML=`
+  document.getElementById("res-content").innerHTML = `
     <div class="res-hdr" style="--cc:${cat.color}">
       <span>${cat.icon}</span>
-      <span>${cat.label} für <em>${esc(game)}</em>${platStr?` · <em>${platStr}</em>`:""}</span>
+      <span>${cat.label} · <em>${esc(game)}</em>${platStr ? ` · <em>${platStr}</em>` : ""}</span>
     </div>
-    <div style="padding:10px 14px;background:rgba(123,47,255,.07);border:1px solid rgba(123,47,255,.2);
-      border-radius:var(--r);margin-bottom:16px;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-2)">
-      🔎 Erkannte Begriffe: <span style="color:var(--purple)">${esc(tokenStr)}</span>
-      &nbsp;·&nbsp; Kombination: <span style="color:var(--cyan)">"${esc(combined)}"</span>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 13px;
+      background:rgba(123,47,255,.07);border:1px solid rgba(123,47,255,.25);
+      border-radius:var(--r);margin-bottom:16px">
+      <span style="font-size:.8rem">🔎</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-3)">
+        Erkannte Begriffe: <span style="color:var(--purple)">${esc(tokenStr)}</span>
+        &nbsp;·&nbsp; Suche: <span style="color:var(--cyan)">"${esc(combined)}"</span>
+      </span>
     </div>
     <div class="link-grid">
-      ${buildTokenLinks(catId, combined, g, gq, q, cat).map((l,i)=>
-        `<a class="link-card" href="${l.url}" target="_blank" rel="noopener"
+      ${links.map((l,i)=>`
+        <a class="link-card" href="${l.url}" target="_blank" rel="noopener"
            style="animation-delay:${i*55}ms;--cc:${cat.color}">
           <div class="lc-ico">${l.ico}</div>
           <div class="lc-info">
             <div class="lc-site">${l.site}</div>
-            <div class="lc-desc">${l.desc}</div>
+            <div class="lc-desc" style="word-break:break-word">${esc(l.desc.slice(0,60))}</div>
           </div>
           <div class="lc-arr">→</div>
           <div class="lc-glow"></div>
         </a>`).join("")}
     </div>
     ${quickBar(combined, cat)}`;
+
+  document.getElementById("results").classList.add("show");
+  document.getElementById("results").scrollIntoView({behavior:"smooth",block:"start"});
   animCards();
+  showToast(`${cat.icon} Suche: "${combined.slice(0,40)}…"`);
 }
 
 function buildTokenLinks(catId, combined, g, gq, q, cat){
