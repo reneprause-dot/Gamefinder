@@ -873,7 +873,7 @@ function showPage(id,btn){
 // HISTORY
 // ═══════════════════════════════════════════════════════
 function addHistory(name){
-  HISTORY=HISTORY.filter(h=>h!==name);
+  HISTORY=HISTORY.filter(h=>h.toLowerCase()!==name.toLowerCase());
   HISTORY.unshift(name);
   if(HISTORY.length>10)HISTORY=HISTORY.slice(0,10);
   saveStore(SK.history,HISTORY);
@@ -901,7 +901,8 @@ function histSearch(name){
 async function onInput(){
   const q=document.getElementById("game-input").value.trim();
   if(q.length<2){hideSug();return;}
-  const local=S.dbGames.filter(g=>g.name.toLowerCase().includes(q.toLowerCase())).slice(0,4);
+  const qLower=q.toLowerCase();
+  const local=S.dbGames.filter(g=>g.name.toLowerCase().includes(qLower)).slice(0,4);
   try{
     const pp=S.plat?`&platforms=${S.plat.id}`:"";
     const r=await fetch(`${CFG.rawg}/games?search=${enc(q)}${pp}&page_size=8&key=${CFG.rawgKey}`);
@@ -996,7 +997,7 @@ async function loadGameBanner(slugOrName){
       ${shots.length?`<div class="screens-strip">${shots.map(s=>`<img class="screen-thumb" src="${s.image}" loading="lazy" onclick="openLB('${s.image}')">`).join("")}</div>`:""}`;
   }catch{
     const name = slugOrName;
-    const isFav = FAV_GAMES.some(f=>f.name===name||f.slug===name);
+    const isFav = FAV_GAMES.some(f=>f.name.toLowerCase()===name.toLowerCase()||f.slug===name);
     b.innerHTML=`
       <div class="banner-bg">
         <div class="banner-ov">
@@ -1024,7 +1025,7 @@ function doSearch(){
     const gi=document.getElementById("game-input");
     gi.classList.add("shake");setTimeout(()=>gi.classList.remove("shake"),400);return;
   }
-  S.game = name;
+  S.game = name; // keep original casing for display & API queries
   if(!S.gameSlug) loadGameBanner(name);
   addHistory(name);
   unlockContentSearch(name);
@@ -1559,7 +1560,7 @@ function toggleFavGame(){
   };
 
   const btn = document.getElementById("fav-game-btn");
-  const idx = FAV_GAMES.findIndex(f=>f.slug===g.slug || f.name===g.name);
+  const idx = FAV_GAMES.findIndex(f=>f.slug===g.slug || f.name.toLowerCase()===g.name.toLowerCase());
   if(idx>=0){
     FAV_GAMES.splice(idx,1);
     if(btn){ btn.textContent="🤍"; btn.classList.remove("on"); }
@@ -1978,7 +1979,7 @@ const RECENT_KEY = "gf_recent";
 let RECENT = loadStore(RECENT_KEY, []); // [{name,slug,bg}]
 
 function addRecent(game){
-  RECENT = RECENT.filter(r=>r.slug!==game.slug && r.name!==game.name);
+  RECENT = RECENT.filter(r=>r.slug!==game.slug && r.name.toLowerCase()!==game.name.toLowerCase());
   RECENT.unshift(game);
   if(RECENT.length>5) RECENT=RECENT.slice(0,5);
   saveStore(RECENT_KEY, RECENT);
