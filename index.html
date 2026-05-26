@@ -1707,119 +1707,134 @@ async function loadNewsPage(forceRefresh) {
   }
 
   const cachedTs = localStorage.getItem(NEWS_CACHE_TS);
-  const cacheAge = cachedTs ? (Date.now() - new Date(cachedTs).getTime()) : Infinity;
-  // Invalidate cache if: forced, too old, or cached entries have no articles array
-  const cacheHasArticles = Object.values(newsCache).some(n=>Array.isArray(n.articles));
+  const cacheAge = cachedTs ? (Date.now()-new Date(cachedTs).getTime()) : Infinity;
+  const cacheHasArticles = Object.values(newsCache).some(n=>Array.isArray(n.articles)&&n.articles.length>0);
   const useCache = !forceRefresh && cacheAge < 30*60*1000 && cacheHasArticles;
 
-  if (useCache && Object.keys(newsCache).length) {
-    tsEl.textContent = `Stand: ${new Date(cachedTs).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr`;
+  if (useCache) {
+    tsEl.textContent = `Stand: ${new Date(cachedTs).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr (gecacht)`;
     renderNewsList(list);
     return;
   }
 
-  // Show skeleton loaders
-  list.innerHTML = FAV_GAMES.map(g => `
-    <div class="news-card in" style="border-color:var(--border)">
+  // Show skeleton
+  list.innerHTML = FAV_GAMES.map(g=>`
+    <div class="news-card in">
       <div class="news-card-hdr">
         <div class="news-card-cover-placeholder">🎮</div>
         <div class="news-card-meta">
           <div class="news-card-title" style="color:var(--text-3)">${esc(g.name)}</div>
-          <div class="news-card-sub"><span>⏳ Lade Neuigkeiten…</span></div>
+          <div class="news-card-sub"><span>⏳ Lade…</span></div>
         </div>
       </div>
     </div>`).join("");
 
-  if (btn) { btn.classList.add("spinning"); btn.disabled = true; }
+  if(btn){btn.classList.add("spinning");btn.disabled=true;}
 
-  // Fetch all games in parallel
-  const results = await Promise.allSettled(FAV_GAMES.map(g => fetchNewsForGame(g)));
-  results.forEach((r, i) => {
-    if (r.status === "fulfilled") newsCache[FAV_GAMES[i].slug] = r.value;
-  });
+  // Fetch sequentially to avoid rate limits
+  for(let i=0;i<FAV_GAMES.length;i++){
+    const g = FAV_GAMES[i];
+    try { newsCache[g.slug||g.name] = await fetchNewsForGame(g); }
+    catch(e){ newsCache[g.slug||g.name] = {screenshots:[],dlc:[],articles:[],error:e.message}; }
+  }
+
   saveStore(NEWS_CACHE_KEY, newsCache);
-  const now = new Date().toISOString();
-  localStorage.setItem(NEWS_CACHE_TS, now);
+  localStorage.setItem(NEWS_CACHE_TS, new Date().toISOString());
   tsEl.textContent = `Stand: ${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr`;
 
-  if (btn) { btn.classList.remove("spinning"); btn.disabled = false; }
+  if(btn){btn.classList.remove("spinning");btn.disabled=false;}
   renderNewsList(list);
 
-  // Update news badge
-  const totalNew = Object.values(newsCache).reduce((s,n)=>(n.screenshots?.length||0)>0||(n.dlc?.length||0)>0?s+1:s,0);
-  const nb = document.getElementById("news-badge");
-  if (nb) { if(totalNew>0){nb.style.display="";} else {nb.style.display="none";} }
+  // badge
+  const totalNew = Object.values(newsCache).reduce((s,n)=>s+(n.articles?.length>0?1:0),0);
+  const nb=document.getElementById("news-badge");
+  if(nb){nb.style.display=totalNew>0?"":"none";}
 }
 
 async function fetchNewsForGame(g) {
-  const slug = g.slug;
+  const slug     = g.slug || "";
+  const gameName = g.name || slug;
 
   // ── 1. Screenshots via RAWG ──────────────────────────
   let screenshots = [];
-  try {
-    const r = await fetch(`${CFG.rawg}/games/${slug}/screenshots?key=${CFG.rawgKey}&page_size=6`);
-    if (r.ok) { const d = await r.json(); screenshots = (d.results||[]).map(s=>s.image); }
-  } catch{}
+  if (slug) {
+    try {
+      const r = await fetch(`${CFG.rawg}/games/${slug}/screenshots?key=${CFG.rawgKey}&page_size=6`);
+      if (r.ok) { const d=await r.json(); screenshots=(d.results||[]).map(s=>s.image); }
+    } catch{}
+  }
 
   // ── 2. DLC via RAWG ──────────────────────────────────
   const cutoff3m = new Date(); cutoff3m.setMonth(cutoff3m.getMonth()-3);
   let dlc = [];
-  try {
-    const r = await fetch(`${CFG.rawg}/games/${slug}/additions?key=${CFG.rawgKey}&page_size=8`);
-    if (r.ok) {
-      const d = await r.json();
-      dlc = (d.results||[]).map(x=>({
-        name:     x.name,
-        bg:       x.background_image||"",
-        released: x.released||"",
-        rating:   x.rating||0,
-        tag:      guessDLCTag(x.name),
-        isFresh:  x.released ? new Date(x.released)>=cutoff3m : false
-      }));
-    }
-  } catch{}
+  if (slug) {
+    try {
+      const r = await fetch(`${CFG.rawg}/games/${slug}/additions?key=${CFG.rawgKey}&page_size=8`);
+      if (r.ok) {
+        const d=await r.json();
+        dlc=(d.results||[]).map(x=>({
+          name:x.name, bg:x.background_image||"",
+          released:x.released||"", rating:x.rating||0,
+          tag:guessDLCTag(x.name),
+          isFresh: x.released ? new Date(x.released)>=cutoff3m : false
+        }));
+      }
+    } catch{}
+  }
 
-  // ── 3. Google News RSS – multi-proxy fallback chain ──
-  const cutoff7d = new Date(); cutoff7d.setDate(cutoff7d.getDate()-7);
+  // ── 3. Google News RSS via rss2json ──────────────────
   let articles = [];
   try {
-    const query  = encodeURIComponent(`"${g.name}" game`);
+    // Search by game name – more reliable than slug
+    const query  = encodeURIComponent(gameName + " game");
     const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=de&gl=DE&ceid=DE:de`;
     const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
 
-    const r = await fetch(apiUrl, {signal: AbortSignal.timeout(8000)});
+    console.log(`[GameFinder News] Fetching: ${gameName}`);
+    const r = await fetch(apiUrl, {signal: AbortSignal.timeout(10000)});
+    console.log(`[GameFinder News] Status: ${r.status}`);
+
     if (r.ok) {
       const d = await r.json();
+      console.log(`[GameFinder News] rss2json status: ${d.status}, items: ${d.items?.length}`);
+
       if (d.status === "ok" && d.items?.length) {
         const cutoff3mMs = cutoff3m.getTime();
+        const now = Date.now();
+
         articles = d.items.map(item => {
-          // pubDate from rss2json: "2026-05-03 07:00:00"
-          const pub     = new Date((item.pubDate||"").replace(" ","T")+"Z");
-          const ageDays = isNaN(pub) ? 999 : Math.floor((Date.now()-pub.getTime())/86400000);
+          // rss2json pubDate: "2026-05-03 07:00:00" → parse carefully
+          const rawDate = (item.pubDate||"").trim();
+          const pub = rawDate
+            ? new Date(rawDate.replace(" ","T")+"Z")
+            : new Date(0);
+          const valid   = !isNaN(pub.getTime()) && pub.getTime() > 0;
+          const ageDays = valid ? Math.floor((now - pub.getTime())/86400000) : 999;
 
-          // Source: extract publisher from title "Article title - Publisher Name"
+          // Extract publisher from end of title: "Title - Publisher"
           const rawTitle = (item.title||"").replace(/<[^>]+>/g,"").trim();
-          const dashIdx  = rawTitle.lastIndexOf(" - ");
-          const title    = dashIdx>0 ? rawTitle.slice(0,dashIdx).trim() : rawTitle;
-          const source   = dashIdx>0 ? rawTitle.slice(dashIdx+3).trim() : extractDomain(item.link||"");
+          const dash = rawTitle.lastIndexOf(" - ");
+          const title  = dash>0 ? rawTitle.slice(0,dash).trim() : rawTitle;
+          const source = dash>0 ? rawTitle.slice(dash+3).trim()
+                       : (item.author || extractDomain(item.link||""));
 
-          // URL: Google wraps links – use as-is, they redirect correctly
-          const url = item.link || item.guid || "";
-
+          const url     = item.link || item.guid || "";
           const snippet = (item.description||item.content||"")
-            .replace(/<[^>]+>/g,"").trim().slice(0,200);
+            .replace(/<[^>]+>/g,"").replace(/\s+/g," ").trim().slice(0,200);
 
-          return {
-            title, url, source, snippet,
-            pubDate:  pub,
-            ageDays:  isNaN(pub) ? 999 : ageDays,
-            isFresh7:  ageDays <= 7,
-            isFresh3m: !isNaN(pub) && pub.getTime() >= cutoff3mMs,
-          };
+          const isFresh3m = valid && pub.getTime() >= cutoff3mMs;
+          console.log(`  → "${title.slice(0,40)}" | ${rawDate} | ageDays=${ageDays} | fresh=${isFresh3m}`);
+
+          return { title, url, source, snippet, pubDate:pub, ageDays,
+            isFresh7: ageDays<=7, isFresh3m };
         }).filter(a => a.isFresh3m && a.title && a.url);
+
+        console.log(`[GameFinder News] After filter: ${articles.length} articles`);
       }
     }
-  } catch(e) { console.warn("News fetch failed:", e.message); }
+  } catch(e) {
+    console.warn(`[GameFinder News] Error for ${gameName}:`, e.message);
+  }
 
   return { screenshots, dlc, articles, fetchedAt: new Date().toISOString() };
 }
@@ -1864,7 +1879,7 @@ function articleHTML(a) {
 
 function renderNewsList(list) {
   list.innerHTML = FAV_GAMES.map((g, i) => {
-    const data        = newsCache[g.slug] || { screenshots:[], dlc:[], articles:[] };
+    const data        = newsCache[g.slug||g.name] || { screenshots:[], dlc:[], articles:[] };
     const dlcFresh    = (data.dlc||[]).filter(x=>x.isFresh);
     const arts        = data.articles||[];
     const artsHot     = arts.filter(a=>a.isFresh7);   // ≤ 7 days → highlighted
