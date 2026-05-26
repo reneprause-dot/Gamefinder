@@ -495,10 +495,10 @@ footer a{color:var(--cyan);text-decoration:none}
         <div class="csearch-inp-wrap">
           <span class="csearch-icon">🔎</span>
           <input id="content-input" type="text"
-            placeholder="z. B. beste Rüstung am Anfang…"
+            placeholder="Optional: z. B. beste Rüstung am Anfang…"
             autocomplete="off" autocorrect="off" spellcheck="false" disabled/>
         </div>
-        <button id="csearch-btn">INHALT SUCHEN</button>
+        <button id="csearch-btn">🔎 VERFEINERN</button>
       </div>
       <div class="token-preview" id="token-preview"></div>
       <div class="csearch-hint" id="csearch-hint"></div>
@@ -870,15 +870,21 @@ async function loadGameBanner(slugOrName){
 // SEARCH
 // ═══════════════════════════════════════════════════════
 function doSearch(){
-  const name=document.getElementById("game-input").value.trim();
+  const name = document.getElementById("game-input").value.trim();
   if(!name){
     const gi=document.getElementById("game-input");
     gi.classList.add("shake");setTimeout(()=>gi.classList.remove("shake"),400);return;
   }
-  S.game=name;
-  if(!S.gameSlug)loadGameBanner(name);
+  S.game = name;
+  if(!S.gameSlug) loadGameBanner(name);
   addHistory(name);
   unlockContentSearch(name);
+
+  // If content field is filled → refined search
+  const raw = document.getElementById("content-input").value.trim();
+  if(raw){ doContentSearch(); return; }
+
+  // Normal search
   const ct=document.getElementById("cat-tabs");
   ct.innerHTML=CATS.map(c=>`
     <button class="cat-btn" data-cat="${c.id}" style="--cc:${c.color}">
@@ -938,7 +944,7 @@ function unlockContentSearch(gameName){
   inp.value = "";
   tag.textContent = `🎮 ${gameName}`;
   document.getElementById("token-preview").innerHTML="";
-  document.getElementById("csearch-hint").textContent="Beschreibe was du suchen möchtest – z. B. \"beste Rüstung am Anfang\"";
+  document.getElementById("csearch-hint").textContent="Optional – verfeinert die Suche. Leer lassen für normale Suche.";
 }
 
 function onContentInput(){
@@ -968,13 +974,9 @@ function doContentSearch(){
     setTimeout(()=>document.getElementById("game-input").classList.remove("shake"),400);
     return;
   }
-  if(!raw){
-    const ci = document.getElementById("content-input");
-    ci.style.borderColor="var(--pink)";
-    setTimeout(()=>ci.style.borderColor="",1200);
-    showToast("⚠️ Bitte Suchinhalt eingeben");
-    return;
-  }
+
+  // No content text → fall back to normal search
+  if(!raw){ doSearch(); return; }
 
   S.game = game;
   const tokens    = tokenise(raw);
