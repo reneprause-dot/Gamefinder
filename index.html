@@ -1729,55 +1729,58 @@ const NEWS_CACHE_KEY = "gf_news_cache_v2";
 const NEWS_CACHE_TTL = 2 * 60 * 60 * 1000; // 2 h
 let newsCache = loadStore(NEWS_CACHE_KEY, {});
 
-// ── RSS feeds that support CORS via allorigins proxy ──
-const RSS_FEEDS = [
-  { name:"Gamestar.de",  icon:"⭐", color:"#ff6b35", feed:"https://www.gamestar.de/feed/rss/news.xml",           lang:"de" },
-  { name:"GamePro.de",   icon:"🕹️", color:"#f72585", feed:"https://www.gamepro.de/feed/news.xml",                lang:"de" },
-  { name:"PC Games.de",  icon:"💻", color:"#7c3aed", feed:"https://www.pcgames.de/feed/rss/news.xml",            lang:"de" },
-  { name:"IGN",          icon:"🎮", color:"#e11d48", feed:"https://feeds.feedburner.com/ign/all",                lang:"en" },
-  { name:"Eurogamer",    icon:"🌍", color:"#00b4a0", feed:"https://www.eurogamer.net/?format=rss",               lang:"en" },
-  { name:"Rock Paper Shotgun", icon:"🔫", color:"#9146ff", feed:"https://www.rockpapershotgun.com/feed",         lang:"en" },
-];
-
+// ── Query-based RSS sources (Suchbegriff wird direkt in URL übergeben) ──
+// Kein lokales Matching nötig – jede Quelle liefert nur relevante Treffer.
 const RSS_PROXY = url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
 
-// ── Parse RSS XML → array of {title, link, pubDate, source} ──
-function parseRSS(xml, sourceName) {
+const RSS_SOURCES = [
+  {
+    name: "Google News (DE)",
+    icon: "🔍",
+    color: "#4285f4",
+    url: q => `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=de&gl=DE&ceid=DE:de`
+  },
+  {
+    name: "Google News (EN)",
+    icon: "🌐",
+    color: "#34a853",
+    url: q => `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en&gl=US&ceid=US:en`
+  },
+  {
+    name: "Reddit",
+    icon: "🤖",
+    color: "#ff4500",
+    url: q => `https://www.reddit.com/search.rss?q=${encodeURIComponent(q)}&sort=new&limit=15`
+  }
+];
+
+// ── Parse RSS/Atom XML → array of {title, link, pubDate, source, icon, color} ──
+function parseRSS(xml, sourceName, icon, color) {
   try {
     const doc = new DOMParser().parseFromString(xml, "text/xml");
-    return [...doc.querySelectorAll("item")].slice(0, 20).map(item => ({
-      title:   item.querySelector("title")?.textContent?.trim() || "",
-      link:    item.querySelector("link")?.textContent?.trim() || "",
-      pubDate: item.querySelector("pubDate")?.textContent?.trim() || "",
-      source:  sourceName
-    }));
+    // RSS <item> or Atom <entry>
+    const items = [...doc.querySelectorAll("item, entry")].slice(0, 15);
+    return items.map(item => {
+      // link: RSS uses <link> text, Atom uses <link href="">
+      const linkEl = item.querySelector("link");
+      const link = linkEl?.getAttribute("href") || linkEl?.textContent?.trim() || "";
+      // title: strip CDATA wrappers
+      const rawTitle = item.querySelector("title")?.textContent?.trim() || "";
+      const title = rawTitle.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "").trim();
+      const pubDate = item.querySelector("pubDate, published, updated")?.textContent?.trim() || "";
+      return { title, link, pubDate, source: sourceName, feedIcon: icon, feedColor: color };
+    }).filter(a => a.title && a.link);
   } catch { return []; }
 }
 
-// ── Fuzzy match: does a headline mention the game? ──
-function articleMatchesGame(title, gameName) {
-  const t = title.toLowerCase();
-  const words = gameName.toLowerCase()
-    .replace(/[^a-z0-9äöüß\s]/g, "")
-    .split(/\s+/)
-    .filter(w => w.length > 2);
-  // Full title match
-  if (t.includes(gameName.toLowerCase())) return true;
-  // At least half the significant words must appear
-  const hits = words.filter(w => t.includes(w));
-  return words.length >= 2 && hits.length >= Math.ceil(words.length * 0.6);
-}
-
-// ── Fetch one RSS feed, filter for game, return items ──
-async function fetchFeedForGame(feed, gameName) {
+// ── Fetch one query-RSS source for a game ──
+async function fetchFeedForGame(src, gameName) {
   try {
-    const r = await fetch(RSS_PROXY(feed.feed), {signal: AbortSignal.timeout(8000)});
+    const feedUrl = src.url(gameName);
+    const r = await fetch(RSS_PROXY(feedUrl), { signal: AbortSignal.timeout(9000) });
     if (!r.ok) return [];
     const json = await r.json();
-    const items = parseRSS(json.contents || "", feed.name);
-    return items
-      .filter(a => articleMatchesGame(a.title, gameName))
-      .map(a => ({ ...a, feedColor: feed.color, feedIcon: feed.icon }));
+    return parseRSS(json.contents || "", src.name, src.icon, src.color);
   } catch { return []; }
 }
 
@@ -1817,7 +1820,7 @@ async function loadNewsForGame(gameName, cardIdx, forceRefresh) {
 
   // Fetch all RSS feeds in parallel + YouTube
   const [rssResults, ytResults] = await Promise.all([
-    Promise.all(RSS_FEEDS.map(f => fetchFeedForGame(f, gameName))).then(all => all.flat()),
+    Promise.all(RSS_SOURCES.map(s => fetchFeedForGame(s, gameName))).then(all => all.flat()),
     fetchYTForGame(gameName)
   ]);
 
@@ -1963,7 +1966,7 @@ async function prefetchAllNews(forceRefresh) {
       rss = cached.rss; yt = cached.yt;
     } else {
       [rss, yt] = await Promise.all([
-        Promise.all(RSS_FEEDS.map(f => fetchFeedForGame(f, g.name))).then(all => all.flat()),
+        Promise.all(RSS_SOURCES.map(s => fetchFeedForGame(s, g.name))).then(all => all.flat()),
         fetchYTForGame(g.name)
       ]);
       newsCache[cacheKey] = { ts: Date.now(), rss, yt };
