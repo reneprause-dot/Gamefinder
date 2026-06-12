@@ -1725,7 +1725,7 @@ function updateFavBadge(){
 // NEWS PAGE  –  RSS (via allorigins proxy) + YouTube API
 // Cache TTL: 2 hours per game
 // ═══════════════════════════════════════════════════════
-const NEWS_CACHE_KEY = "gf_news_cache_v2";
+const NEWS_CACHE_KEY = "gf_news_cache_v3";
 const NEWS_CACHE_TTL = 2 * 60 * 60 * 1000; // 2 h
 let newsCache = loadStore(NEWS_CACHE_KEY, {});
 
@@ -1787,20 +1787,27 @@ async function fetchFeedForGame(src, gameName) {
 // ── YouTube: fetch videos from last 14 days for game ──
 async function fetchYTForGame(gameName) {
   try {
-    const since = new Date(Date.now() - 14*24*60*60*1000).toISOString();
     const q = encodeURIComponent(gameName);
-    const r = await fetch(
-      `${CFG.yt}/search?part=snippet&q=${q}&type=video&order=date&publishedAfter=${since}&maxResults=8&relevanceLanguage=de&key=${CFG.ytKey}`
-    );
-    if (!r.ok) return [];
-    const d = await r.json();
+    const since30 = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+    const base = `${CFG.yt}/search?part=snippet&q=${q}&type=video&order=date&maxResults=8&key=${CFG.ytKey}`;
+
+    // First try: last 30 days
+    let r = await fetch(base + `&publishedAfter=${since30}`);
+    let d = r.ok ? await r.json() : { items: [] };
+
+    // Fallback: no date filter (broader results)
+    if (!d.items || d.items.length === 0) {
+      r = await fetch(base);
+      d = r.ok ? await r.json() : { items: [] };
+    }
+
     return (d.items || []).map(v => ({
-      videoId:   v.id?.videoId,
-      title:     v.snippet?.title || "",
-      channel:   v.snippet?.channelTitle || "",
-      pubDate:   v.snippet?.publishedAt || "",
-      thumb:     v.snippet?.thumbnails?.medium?.url || "",
-      source:    "YouTube"
+      videoId: v.id?.videoId,
+      title:   v.snippet?.title || "",
+      channel: v.snippet?.channelTitle || "",
+      pubDate: v.snippet?.publishedAt || "",
+      thumb:   v.snippet?.thumbnails?.medium?.url || "",
+      source:  "YouTube"
     })).filter(v => v.videoId);
   } catch { return []; }
 }
