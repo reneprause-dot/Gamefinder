@@ -444,6 +444,38 @@ footer a{color:var(--cyan);text-decoration:none}
   text-decoration:none;color:var(--text-2);font-size:.82rem;transition:all .15s;white-space:nowrap}
 .news-glink:hover{border-color:var(--cyan);color:var(--cyan)}
 
+/* ── LIVE FEED: YouTube video list ── */
+.nf-vid-list{display:flex;flex-direction:column;gap:8px}
+.nf-vid{display:flex;gap:10px;align-items:flex-start;padding:10px;background:var(--bg-deep);
+  border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:border-color .2s,background .15s}
+.nf-vid:hover{border-color:var(--orange);background:var(--bg-hover)}
+.nf-vid-thumb-wrap{position:relative;width:112px;height:63px;flex-shrink:0;border-radius:6px;overflow:hidden;background:var(--bg-void)}
+.nf-vid-thumb-wrap img{width:100%;height:100%;object-fit:cover}
+.nf-vid-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.45);opacity:0;transition:opacity .15s;font-size:1.3rem;color:#fff}
+.nf-vid:hover .nf-vid-play{opacity:1}
+.nf-vid-info{flex:1;min-width:0}
+.nf-vid-title{font-weight:700;font-size:.82rem;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px}
+.nf-vid-meta{font-size:.68rem;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+
+/* ── LIVE FEED: RSS article blocks ── */
+.nf-source-block{margin-bottom:14px}
+.nf-source-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-3);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.nf-count{background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.3);border-radius:20px;
+  color:var(--cyan);padding:0 7px;font-size:.65rem}
+.nf-article{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 12px;background:var(--bg-deep);border:1px solid var(--border);border-radius:var(--r);
+  text-decoration:none;color:var(--text-1);margin-bottom:5px;transition:border-color .15s,background .15s}
+.nf-article:hover{border-color:var(--cyan);background:var(--bg-hover)}
+.nf-article-title{font-size:.82rem;font-weight:600;flex:1;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}
+.nf-article-meta{font-size:.68rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;
+  white-space:nowrap;flex-shrink:0}
+.news-no-articles{font-size:.8rem;color:var(--text-3);font-family:'JetBrains Mono',monospace;
+  padding:10px 0;display:flex;align-items:center;gap:8px}
+
 /* LIGHTBOX – image + video */
 #lightbox{display:none;position:fixed;inset:0;z-index:9990;background:rgba(0,0,0,.94);
   align-items:center;justify-content:center;flex-direction:column;gap:14px}
@@ -852,6 +884,8 @@ function init(){
   renderRecentStrip();
   updateFavBadge();
   initTheme();
+  // Background news prefetch fills nav badge without blocking UI
+  if (FAV_GAMES.length) setTimeout(() => prefetchAllNews(false), 1500);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1688,49 +1722,279 @@ function updateFavBadge(){
 }
 
 // ═══════════════════════════════════════════════════════
-// NEWS PAGE
+// NEWS PAGE  –  RSS (via allorigins proxy) + YouTube API
+// Cache TTL: 2 hours per game
 // ═══════════════════════════════════════════════════════
-const NEWS_CACHE_KEY = "gf_news_cache";
+const NEWS_CACHE_KEY = "gf_news_cache_v2";
+const NEWS_CACHE_TTL = 2 * 60 * 60 * 1000; // 2 h
 let newsCache = loadStore(NEWS_CACHE_KEY, {});
 
-// ── News source definitions per category ──────────────
-const NEWS_SOURCES = {
-  news: [
-    { name:"Google News",    icon:"🔍", color:"#4285f4", url: g=>`https://news.google.com/search?q=${encodeURIComponent(g)}&hl=de`,          desc:"Aktuelle Schlagzeilen" },
-    { name:"Gamestar.de",    icon:"⭐", color:"#ff6b35", url: g=>`https://www.gamestar.de/suche/?keywords=${encodeURIComponent(g)}`,          desc:"Deutsches Gaming-Magazin" },
-    { name:"GamePro.de",     icon:"🕹️", color:"#f72585", url: g=>`https://www.gamepro.de/suche/?keywords=${encodeURIComponent(g)}`,           desc:"News & Tests" },
-    { name:"IGN",            icon:"🎮", color:"#e11d48", url: g=>`https://www.ign.com/search?q=${encodeURIComponent(g)}`,                     desc:"International Gaming News" },
-    { name:"PC Games.de",    icon:"💻", color:"#7c3aed", url: g=>`https://www.pcgames.de/suche/?keywords=${encodeURIComponent(g)}`,           desc:"PC-Fokus News" },
-    { name:"4Players.de",    icon:"👥", color:"#0891b2", url: g=>`https://www.4players.de/4players.php/dispbrowse/uebersicht-0/search-${encodeURIComponent(g)}.html`, desc:"Community & News" },
-  ],
-  updates: [
-    { name:"Google – Patches",   icon:"🔧", color:"#06ffa5", url: g=>`https://www.google.de/search?q=${encodeURIComponent(g+' patch update 2026')}`,   desc:"Patches & Updates" },
-    { name:"Google – DLC",       icon:"📦", color:"#ffd60a", url: g=>`https://www.google.de/search?q=${encodeURIComponent(g+' DLC Erweiterung 2026')}`, desc:"DLC & Erweiterungen" },
-    { name:"Steam",              icon:"🚂", color:"#1b2838", url: g=>`https://store.steampowered.com/search/?term=${encodeURIComponent(g)}`,            desc:"Steam Store & Updates" },
-    { name:"Metacritic",         icon:"🏆", color:"#ff6b35", url: g=>`https://www.metacritic.com/search/${encodeURIComponent(g)}/`,                     desc:"Ratings & Updates" },
-  ],
-  videos: [
-    { name:"YouTube – News",     icon:"▶️", color:"#ff0000", url: g=>`https://www.youtube.com/results?search_query=${encodeURIComponent(g+' news 2026')}`,          desc:"Aktuelle Video-News" },
-    { name:"YouTube – Preview",  icon:"🎬", color:"#ff0000", url: g=>`https://www.youtube.com/results?search_query=${encodeURIComponent(g+' trailer preview')}`,    desc:"Trailer & Previews" },
-    { name:"YouTube – Review",   icon:"📺", color:"#ff0000", url: g=>`https://www.youtube.com/results?search_query=${encodeURIComponent(g+' review test deutsch')}`, desc:"Reviews auf Deutsch" },
-    { name:"Twitch",             icon:"📡", color:"#9146ff", url: g=>`https://www.twitch.tv/search?term=${encodeURIComponent(g)}`,                                   desc:"Live Streams" },
-  ],
-  social: [
-    { name:"Reddit",             icon:"🤖", color:"#ff4500", url: g=>`https://www.reddit.com/search/?q=${encodeURIComponent(g)}&sort=new`,              desc:"Community Diskussionen" },
-    { name:"X / Twitter",        icon:"🐦", color:"#1da1f2", url: g=>`https://twitter.com/search?q=${encodeURIComponent(g)}&f=live`,                    desc:"Aktuelle Tweets" },
-  ]
-};
-
-const NEWS_TABS = [
-  { id:"news",    label:"📰 News",          color:"#00f5d4" },
-  { id:"updates", label:"🔧 Updates & DLC",  color:"#ffd60a" },
-  { id:"videos",  label:"▶️ Videos",          color:"#ff6b35" },
-  { id:"social",  label:"💬 Community",       color:"#f72585" },
+// ── RSS feeds that support CORS via allorigins proxy ──
+const RSS_FEEDS = [
+  { name:"Gamestar.de",  icon:"⭐", color:"#ff6b35", feed:"https://www.gamestar.de/feed/rss/news.xml",           lang:"de" },
+  { name:"GamePro.de",   icon:"🕹️", color:"#f72585", feed:"https://www.gamepro.de/feed/news.xml",                lang:"de" },
+  { name:"PC Games.de",  icon:"💻", color:"#7c3aed", feed:"https://www.pcgames.de/feed/rss/news.xml",            lang:"de" },
+  { name:"IGN",          icon:"🎮", color:"#e11d48", feed:"https://feeds.feedburner.com/ign/all",                lang:"en" },
+  { name:"Eurogamer",    icon:"🌍", color:"#00b4a0", feed:"https://www.eurogamer.net/?format=rss",               lang:"en" },
+  { name:"Rock Paper Shotgun", icon:"🔫", color:"#9146ff", feed:"https://www.rockpapershotgun.com/feed",         lang:"en" },
 ];
 
-function loadNewsPage(forceRefresh) {
-  const list = document.getElementById("news-list");
-  const tsEl = document.getElementById("news-ts");
+const RSS_PROXY = url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+
+// ── Parse RSS XML → array of {title, link, pubDate, source} ──
+function parseRSS(xml, sourceName) {
+  try {
+    const doc = new DOMParser().parseFromString(xml, "text/xml");
+    return [...doc.querySelectorAll("item")].slice(0, 20).map(item => ({
+      title:   item.querySelector("title")?.textContent?.trim() || "",
+      link:    item.querySelector("link")?.textContent?.trim() || "",
+      pubDate: item.querySelector("pubDate")?.textContent?.trim() || "",
+      source:  sourceName
+    }));
+  } catch { return []; }
+}
+
+// ── Fuzzy match: does a headline mention the game? ──
+function articleMatchesGame(title, gameName) {
+  const t = title.toLowerCase();
+  const words = gameName.toLowerCase()
+    .replace(/[^a-z0-9äöüß\s]/g, "")
+    .split(/\s+/)
+    .filter(w => w.length > 2);
+  // Full title match
+  if (t.includes(gameName.toLowerCase())) return true;
+  // At least half the significant words must appear
+  const hits = words.filter(w => t.includes(w));
+  return words.length >= 2 && hits.length >= Math.ceil(words.length * 0.6);
+}
+
+// ── Fetch one RSS feed, filter for game, return items ──
+async function fetchFeedForGame(feed, gameName) {
+  try {
+    const r = await fetch(RSS_PROXY(feed.feed), {signal: AbortSignal.timeout(8000)});
+    if (!r.ok) return [];
+    const json = await r.json();
+    const items = parseRSS(json.contents || "", feed.name);
+    return items
+      .filter(a => articleMatchesGame(a.title, gameName))
+      .map(a => ({ ...a, feedColor: feed.color, feedIcon: feed.icon }));
+  } catch { return []; }
+}
+
+// ── YouTube: fetch videos from last 14 days for game ──
+async function fetchYTForGame(gameName) {
+  try {
+    const since = new Date(Date.now() - 14*24*60*60*1000).toISOString();
+    const q = encodeURIComponent(gameName);
+    const r = await fetch(
+      `${CFG.yt}/search?part=snippet&q=${q}&type=video&order=date&publishedAfter=${since}&maxResults=8&relevanceLanguage=de&key=${CFG.ytKey}`
+    );
+    if (!r.ok) return [];
+    const d = await r.json();
+    return (d.items || []).map(v => ({
+      videoId:   v.id?.videoId,
+      title:     v.snippet?.title || "",
+      channel:   v.snippet?.channelTitle || "",
+      pubDate:   v.snippet?.publishedAt || "",
+      thumb:     v.snippet?.thumbnails?.medium?.url || "",
+      source:    "YouTube"
+    })).filter(v => v.videoId);
+  } catch { return []; }
+}
+
+// ── Main loader for one game card ──
+async function loadNewsForGame(gameName, cardIdx, forceRefresh) {
+  const cacheKey = `${gameName}__${cardIdx}`;
+  const cached = newsCache[cacheKey];
+  if (!forceRefresh && cached && (Date.now() - cached.ts < NEWS_CACHE_TTL)) {
+    renderNewsCardData(cardIdx, gameName, cached.rss, cached.yt);
+    return;
+  }
+
+  // Show per-card skeleton
+  const inner = document.querySelector(`#nc-${cardIdx} .news-card-inner`);
+  if (inner) inner.innerHTML = `<div class="loader" style="padding:24px"><div class="spin"></div><div class="loader-txt">Lade News für „${esc(gameName)}"…</div></div>`;
+
+  // Fetch all RSS feeds in parallel + YouTube
+  const [rssResults, ytResults] = await Promise.all([
+    Promise.all(RSS_FEEDS.map(f => fetchFeedForGame(f, gameName))).then(all => all.flat()),
+    fetchYTForGame(gameName)
+  ]);
+
+  // Cache results
+  newsCache[cacheKey] = { ts: Date.now(), rss: rssResults, yt: ytResults };
+  saveStore(NEWS_CACHE_KEY, newsCache);
+
+  renderNewsCardData(cardIdx, gameName, rssResults, ytResults);
+}
+
+// ── Render live data into an open card ──
+function renderNewsCardData(cardIdx, gameName, rssItems, ytItems) {
+  const inner = document.querySelector(`#nc-${cardIdx} .news-card-inner`);
+  if (!inner) return;
+
+  // Update badge on card header
+  const total = rssItems.length + ytItems.length;
+  const headerBadge = document.querySelector(`#nc-${cardIdx} .news-live-badge`);
+  if (headerBadge) {
+    headerBadge.textContent = total > 0 ? `🆕 ${total} neu` : "Keine aktuellen News";
+    headerBadge.style.color = total > 0 ? "var(--cyan)" : "var(--text-3)";
+    headerBadge.style.borderColor = total > 0 ? "rgba(0,245,212,.4)" : "var(--border)";
+  }
+  // Mark card border if has news
+  const card = document.getElementById(`nc-${cardIdx}`);
+  if (card && total > 0) card.classList.add("has-new");
+
+  // ── Section: YouTube Videos ──
+  const ytHtml = ytItems.length ? `
+    <div class="news-section">
+      <div class="news-section-title">▶️ YouTube · <span>${ytItems.length} neue Videos</span></div>
+      <div class="nf-vid-list">
+        ${ytItems.map(v => `
+          <div class="nf-vid" onclick="openVideo('${v.videoId}','${esc(v.title)}')">
+            <div class="nf-vid-thumb-wrap">
+              <img src="${v.thumb}" loading="lazy" alt="" onerror="this.style.display='none'"/>
+              <div class="nf-vid-play">▶</div>
+            </div>
+            <div class="nf-vid-info">
+              <div class="nf-vid-title">${esc(v.title)}</div>
+              <div class="nf-vid-meta">${esc(v.channel)} · ${fmtDate(v.pubDate)}</div>
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>` : `
+    <div class="news-section">
+      <div class="news-section-title">▶️ YouTube</div>
+      <div class="news-no-articles">Keine neuen Videos der letzten 14 Tage gefunden.
+        <a class="ql" href="https://www.youtube.com/results?search_query=${encodeURIComponent(gameName)}" target="_blank" rel="noopener" style="margin-left:6px">Manuell suchen →</a>
+      </div>
+    </div>`;
+
+  // ── Section: RSS Articles ──
+  const grouped = {};
+  rssItems.forEach(a => { if(!grouped[a.source]) grouped[a.source]=[]; grouped[a.source].push(a); });
+
+  const rssHtml = rssItems.length ? `
+    <div class="news-section">
+      <div class="news-section-title">📰 Artikel · <span>${rssItems.length} Treffer in ${Object.keys(grouped).length} Quellen</span></div>
+      ${Object.entries(grouped).map(([src, arts]) => `
+        <div class="nf-source-block">
+          <div class="nf-source-label">${arts[0].feedIcon} ${esc(src)} <span class="nf-count">${arts.length}</span></div>
+          ${arts.map(a => `
+            <a class="nf-article" href="${a.link}" target="_blank" rel="noopener">
+              <div class="nf-article-title">${esc(a.title)}</div>
+              <div class="nf-article-meta">${fmtDate(a.pubDate)}</div>
+            </a>`).join("")}
+        </div>`).join("")}
+    </div>` : `
+    <div class="news-section">
+      <div class="news-section-title">📰 Artikel-Feeds</div>
+      <div class="news-no-articles">Keine passenden Artikel in den Feeds gefunden.</div>
+    </div>`;
+
+  // ── Section: Direktlinks (always visible) ──
+  const g = encodeURIComponent(gameName);
+  const directHtml = `
+    <div class="news-section">
+      <div class="news-section-title">🔗 Direkt öffnen</div>
+      <div class="news-glinks">
+        <a class="news-glink" href="https://www.google.de/search?q=${g}&tbm=nws" target="_blank" rel="noopener">🔍 Google News</a>
+        <a class="news-glink" href="https://www.gamestar.de/suche/?keywords=${g}" target="_blank" rel="noopener">⭐ Gamestar</a>
+        <a class="news-glink" href="https://www.gamepro.de/suche/?keywords=${g}" target="_blank" rel="noopener">🕹️ GamePro</a>
+        <a class="news-glink" href="https://www.reddit.com/search/?q=${g}&sort=new" target="_blank" rel="noopener">🤖 Reddit</a>
+        <a class="news-glink" href="https://store.steampowered.com/search/?term=${g}" target="_blank" rel="noopener">🚂 Steam</a>
+        <a class="news-glink" href="https://twitter.com/search?q=${g}&f=live" target="_blank" rel="noopener">🐦 X/Twitter</a>
+      </div>
+    </div>`;
+
+  inner.innerHTML = ytHtml + rssHtml + directHtml;
+}
+
+// ── Initial card render (skeleton, no data yet) ──
+function renderNewsCard(g, i) {
+  const gName = g.name;
+  return `
+    <div class="news-card" id="nc-${i}" style="animation-delay:${i*60}ms">
+      <div class="news-card-hdr" onclick="toggleNewsCard(${i}, '${esc(gName)}')">
+        ${g.bg
+          ? `<img class="news-card-cover" src="${g.bg}" loading="lazy" alt="" onerror="this.style.display='none'">`
+          : `<div class="news-card-cover-placeholder">🎮</div>`}
+        <div class="news-card-meta">
+          <div class="news-card-title">${esc(gName)}</div>
+          <div class="news-card-sub">
+            ${g.released ? `<span>📅 ${g.released.slice(0,4)}</span>` : ""}
+            ${g.rating   ? `<span>⭐ ${(+g.rating).toFixed(1)}</span>` : ""}
+            <span class="news-live-badge" style="color:var(--text-3);border:1px solid var(--border);border-radius:20px;padding:1px 8px;font-size:.65rem">⏳ Wird geladen…</span>
+          </div>
+        </div>
+        <span class="news-card-chevron">▼</span>
+      </div>
+      <div class="news-card-body">
+        <div class="news-card-inner">
+          <div style="padding:20px;color:var(--text-3);font-size:.8rem;font-family:'JetBrains Mono',monospace;text-align:center">
+            ▼ Aufklappen um News zu laden
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleNewsCard(i, gameName) {
+  const card = document.getElementById(`nc-${i}`);
+  if (!card) return;
+  const isOpen = card.classList.contains("open");
+  document.querySelectorAll(".news-card.open").forEach(c => c.classList.remove("open"));
+  if (!isOpen) {
+    card.classList.add("open");
+    // Load data on first open (or if gameName passed)
+    if (gameName) loadNewsForGame(gameName, i, false);
+  }
+}
+
+// ── Pre-fetch all games in background, update badges ──
+async function prefetchAllNews(forceRefresh) {
+  let totalNew = 0;
+  for (let i = 0; i < FAV_GAMES.length; i++) {
+    const g = FAV_GAMES[i];
+    const cacheKey = `${g.name}__${i}`;
+    const cached = newsCache[cacheKey];
+    let rss, yt;
+    if (!forceRefresh && cached && (Date.now() - cached.ts < NEWS_CACHE_TTL)) {
+      rss = cached.rss; yt = cached.yt;
+    } else {
+      [rss, yt] = await Promise.all([
+        Promise.all(RSS_FEEDS.map(f => fetchFeedForGame(f, g.name))).then(all => all.flat()),
+        fetchYTForGame(g.name)
+      ]);
+      newsCache[cacheKey] = { ts: Date.now(), rss, yt };
+      saveStore(NEWS_CACHE_KEY, newsCache);
+    }
+    const count = (rss?.length || 0) + (yt?.length || 0);
+    totalNew += count;
+    // Update badge on already-rendered card if present
+    const badge = document.querySelector(`#nc-${i} .news-live-badge`);
+    if (badge) {
+      badge.textContent = count > 0 ? `🆕 ${count} neu` : "Keine aktuellen News";
+      badge.style.color = count > 0 ? "var(--cyan)" : "var(--text-3)";
+    }
+    const card = document.getElementById(`nc-${i}`);
+    if (card && count > 0) card.classList.add("has-new");
+  }
+  // Update nav badge
+  const navBadge = document.getElementById("news-badge");
+  if (totalNew > 0) {
+    navBadge.textContent = totalNew;
+    navBadge.style.display = "";
+  } else {
+    navBadge.style.display = "none";
+  }
+  return totalNew;
+}
+
+async function loadNewsPage(forceRefresh) {
+  const list  = document.getElementById("news-list");
+  const tsEl  = document.getElementById("news-ts");
+  const refBtn = document.getElementById("news-refresh-btn");
 
   if (!FAV_GAMES.length) {
     list.innerHTML = `
@@ -1746,89 +2010,19 @@ function loadNewsPage(forceRefresh) {
     return;
   }
 
-  tsEl.textContent = `${FAV_GAMES.length} Spiel${FAV_GAMES.length>1?"e":""} · Klicke eine Karte um News zu öffnen`;
+  if (refBtn) refBtn.classList.add("spinning");
+  tsEl.textContent = `${FAV_GAMES.length} Spiel${FAV_GAMES.length>1?"e":""} · Feeds werden abgerufen…`;
+
+  // Render card skeletons immediately
   list.innerHTML = FAV_GAMES.map((g,i) => renderNewsCard(g,i)).join("");
-  document.querySelectorAll(".news-card").forEach((c,i)=>setTimeout(()=>c.classList.add("in"),i*60));
-  document.getElementById("news-badge").style.display="none";
-}
+  document.querySelectorAll(".news-card").forEach((c,i) => setTimeout(() => c.classList.add("in"), i*60));
 
-function renderNewsCard(g, i) {
-  const gName = g.name;
-  return `
-    <div class="news-card" id="nc-${i}" style="animation-delay:${i*60}ms">
-      <div class="news-card-hdr" onclick="toggleNewsCard(${i})">
-        ${g.bg
-          ? `<img class="news-card-cover" src="${g.bg}" loading="lazy" alt="" onerror="this.style.display='none'">`
-          : `<div class="news-card-cover-placeholder">🎮</div>`}
-        <div class="news-card-meta">
-          <div class="news-card-title">${esc(gName)}</div>
-          <div class="news-card-sub">
-            ${g.released?`<span>📅 ${g.released.slice(0,4)}</span>`:""}
-            ${g.rating?`<span>⭐ ${(+g.rating).toFixed(1)}</span>`:""}
-            <span style="color:var(--cyan)">📰 News, Updates, Videos & mehr</span>
-          </div>
-        </div>
-        <span class="news-card-chevron">▼</span>
-      </div>
-      <div class="news-card-body">
-        <div class="news-card-inner">
+  // Background prefetch — fills badges on all cards
+  const totalNew = await prefetchAllNews(forceRefresh);
 
-          <!-- News Category Tabs -->
-          <div class="news-inner-tabs" id="nit-${i}">
-            ${NEWS_TABS.map(t=>`
-              <button class="news-inner-tab${t.id==="news"?" nit-on":""}"
-                style="--ntc:${t.color}"
-                onclick="switchNewsTab(${i},'${t.id}',this)">
-                ${t.label}
-              </button>`).join("")}
-          </div>
-
-          <!-- Source Panels -->
-          ${NEWS_TABS.map(t=>`
-            <div class="news-src-panel${t.id==="news"?" nsp-on":""}" id="nsp-${i}-${t.id}">
-              <div class="news-src-grid">
-                ${NEWS_SOURCES[t.id].map(src=>`
-                  <a class="news-src-card" href="${src.url(gName)}" target="_blank" rel="noopener"
-                     style="--nsc:${src.color}">
-                    <div class="nsc-icon">${src.icon}</div>
-                    <div class="nsc-info">
-                      <div class="nsc-name">${src.name}</div>
-                      <div class="nsc-desc">${src.desc}</div>
-                    </div>
-                    <div class="nsc-arrow">→</div>
-                  </a>`).join("")}
-              </div>
-              <div class="news-google-preview">
-                <div class="ngp-label">🔍 Vorschau auf Google</div>
-                <a class="ngp-link" href="https://www.google.de/search?q=${encodeURIComponent(gName+' '+t.id)}&tbm=nws" target="_blank" rel="noopener">
-                  Alle Google News zu „${esc(gName)}"  →
-                </a>
-              </div>
-            </div>`).join("")}
-
-        </div>
-      </div>
-    </div>`;
-}
-
-function switchNewsTab(cardIdx, tabId, btn) {
-  // Update tab buttons
-  const tabs = document.querySelectorAll(`#nit-${cardIdx} .news-inner-tab`);
-  tabs.forEach(t=>t.classList.remove("nit-on"));
-  btn.classList.add("nit-on");
-  // Show correct panel
-  NEWS_TABS.forEach(t=>{
-    const panel = document.getElementById(`nsp-${cardIdx}-${t.id}`);
-    if(panel) panel.classList.toggle("nsp-on", t.id===tabId);
-  });
-}
-
-function toggleNewsCard(i) {
-  const card = document.getElementById(`nc-${i}`);
-  if (!card) return;
-  const isOpen = card.classList.contains("open");
-  document.querySelectorAll(".news-card.open").forEach(c=>c.classList.remove("open"));
-  if (!isOpen) card.classList.add("open");
+  const now = new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+  tsEl.textContent = `${FAV_GAMES.length} Spiel${FAV_GAMES.length>1?"e":""} · Aktualisiert ${now} · ${totalNew > 0 ? totalNew+" neue Inhalte" : "Nichts Neues"}`;
+  if (refBtn) refBtn.classList.remove("spinning");
 }
 
 // ═══════════════════════════════════════════════════════
